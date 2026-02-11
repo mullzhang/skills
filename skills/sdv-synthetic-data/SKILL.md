@@ -164,3 +164,4 @@ SDV (Synthetic Data Vault) を使用して、実データのパターンを学�
 - `generate_single_table.py`: 単一テーブル合成データ生成（`--rows`, `--seed`, `--synthesizer`, `--epochs`, `--save-model`, `--save-metadata`）
 - `generate_multi_table.py`: 複数テーブル合成データ生成（`--config`, `--output-dir`, `--output-format`, `--scale`, `--seed`, `--save-model`, `--save-metadata`）
 - `evaluate_quality.py`: 品質評価レポート生成（`--output`, `--diagnostic`, `--diagnostic-output`）
+- `sample_rows.py`: 入力データの行サンプル抽出（`--rows` または `--fraction`, `--replace`, `--seed`, `--sheet`）
