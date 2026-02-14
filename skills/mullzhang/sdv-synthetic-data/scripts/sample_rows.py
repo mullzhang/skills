@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-行数または割合を指定してデータをサンプリングするスクリプト。
+Sample data by row count or fraction.
 
-使用方法:
+Usage:
     python sample_rows.py input.csv output.csv --rows 1000
     python sample_rows.py input.csv output.csv --rows 2000 --replace
     python sample_rows.py input.xlsx output.xlsx --rows 1000 --seed 42
@@ -10,7 +10,7 @@
     python sample_rows.py input.csv output.csv --fraction 0.1
     python sample_rows.py input.json output.json --rows 1000
 
-対応形式: CSV (.csv), Excel (.xlsx, .xls), JSON (.json)
+Supported formats: CSV (.csv), Excel (.xlsx, .xls), JSON (.json)
 """
 
 import argparse
@@ -23,7 +23,7 @@ from _sdv_utils import SUPPORTED_EXTENSIONS, write_data
 
 
 def read_data(file_path: str, sheet_name: Optional[str] = None) -> pd.DataFrame:
-    """ファイル拡張子に応じてデータを読み込む（Excelはシート指定可）"""
+    """Read data based on file extension (Excel supports optional sheet selection)."""
     ext = Path(file_path).suffix.lower()
     if ext == '.csv':
         return pd.read_csv(file_path)
@@ -33,25 +33,25 @@ def read_data(file_path: str, sheet_name: Optional[str] = None) -> pd.DataFrame:
         return pd.read_excel(file_path)
     if ext == '.json':
         return pd.read_json(file_path)
-    raise ValueError(f"未対応のファイル形式: {ext} (対応形式: {SUPPORTED_EXTENSIONS})")
+    raise ValueError(f"Unsupported file format: {ext} (supported: {SUPPORTED_EXTENSIONS})")
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description='行数または割合を指定してデータをサンプリング')
-    parser.add_argument('input', type=str, help='入力ファイルパス (.csv, .xlsx, .xls, .json)')
-    parser.add_argument('output', type=str, help='出力ファイルパス (.csv, .xlsx, .xls, .json)')
+    parser = argparse.ArgumentParser(description='Sample data by row count or fraction')
+    parser.add_argument('input', type=str, help='Input file path (.csv, .xlsx, .xls, .json)')
+    parser.add_argument('output', type=str, help='Output file path (.csv, .xlsx, .xls, .json)')
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('--rows', type=int, help='抽出する行数')
-    group.add_argument('--fraction', '--frac', type=float, help='抽出する割合 (0 < fraction <= 1)')
-    parser.add_argument('--seed', type=int, default=None, help='再現性のためのシード値')
-    parser.add_argument('--replace', action='store_true', help='復元抽出を行う')
-    parser.add_argument('--sheet', type=str, default=None, help='Excelのシート名（任意）')
+    group.add_argument('--rows', type=int, help='Number of rows to sample')
+    group.add_argument('--fraction', '--frac', type=float, help='Fraction to sample (0 < fraction <= 1)')
+    parser.add_argument('--seed', type=int, default=None, help='Seed value for reproducibility')
+    parser.add_argument('--replace', action='store_true', help='Sample with replacement')
+    parser.add_argument('--sheet', type=str, default=None, help='Excel sheet name (optional)')
     args = parser.parse_args()
 
     if args.rows is not None and args.rows <= 0:
-        raise ValueError('--rows は1以上を指定してください')
+        raise ValueError('--rows must be 1 or greater')
     if args.fraction is not None and not (0 < args.fraction <= 1):
-        raise ValueError('--fraction は0より大きく1以下を指定してください')
+        raise ValueError('--fraction must be greater than 0 and less than or equal to 1')
 
     data = read_data(args.input, sheet_name=args.sheet)
 
@@ -68,7 +68,7 @@ def main() -> None:
     sampled = sampled.reset_index(drop=True)
     write_data(sampled, args.output)
 
-    print(f"完了: 入力行数={len(data)}, 出力行数={len(sampled)}")
+    print(f"Done: input_rows={len(data)}, output_rows={len(sampled)}")
 
 
 if __name__ == "__main__":

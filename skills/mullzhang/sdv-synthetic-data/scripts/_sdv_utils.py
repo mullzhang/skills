@@ -11,12 +11,12 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
-# 対応ファイル拡張子
+# Supported file extensions
 SUPPORTED_EXTENSIONS = {'.csv', '.xlsx', '.xls', '.json'}
 
 
 def read_data(file_path: str) -> pd.DataFrame:
-    """ファイル拡張子に応じてデータを読み込む"""
+    """Read data based on file extension."""
     ext = Path(file_path).suffix.lower()
     if ext == '.csv':
         return pd.read_csv(file_path)
@@ -24,11 +24,11 @@ def read_data(file_path: str) -> pd.DataFrame:
         return pd.read_excel(file_path)
     if ext == '.json':
         return pd.read_json(file_path)
-    raise ValueError(f"未対応のファイル形式: {ext} (対応形式: {SUPPORTED_EXTENSIONS})")
+    raise ValueError(f"Unsupported file format: {ext} (supported: {SUPPORTED_EXTENSIONS})")
 
 
 def write_data(df: pd.DataFrame, file_path: str) -> None:
-    """ファイル拡張子に応じてデータを保存する"""
+    """Write data based on file extension."""
     ext = Path(file_path).suffix.lower()
     if ext == '.csv':
         df.to_csv(file_path, index=False)
@@ -39,11 +39,11 @@ def write_data(df: pd.DataFrame, file_path: str) -> None:
     if ext == '.json':
         df.to_json(file_path, orient='records', force_ascii=False, indent=2)
         return
-    raise ValueError(f"未対応のファイル形式: {ext} (対応形式: {SUPPORTED_EXTENSIONS})")
+    raise ValueError(f"Unsupported file format: {ext} (supported: {SUPPORTED_EXTENSIONS})")
 
 
 def apply_seed(seed: Optional[int], synthesizer=None) -> None:
-    """乱数シードを設定（可能ならシンセサイザーにも適用）"""
+    """Set random seeds (and apply to synthesizer when possible)."""
     if seed is None:
         return
     np.random.seed(seed)
@@ -62,7 +62,7 @@ def sample_with_seed(
     scale: Optional[float] = None,
     seed: Optional[int] = None,
 ):
-    """seed引数対応なら渡し、非対応なら通常サンプル"""
+    """Pass seed when supported; otherwise sample without it."""
     kwargs = {}
     if num_rows is not None:
         kwargs['num_rows'] = num_rows

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-単一テーブルの合成データ生成スクリプト
+Single-table synthetic data generation script.
 
-使用方法:
+Usage:
     python generate_single_table.py input.csv output.csv --rows 1000
     python generate_single_table.py input.xlsx output.xlsx --rows 1000 --synthesizer ctgan
     python generate_single_table.py input.json output.json --rows 1000
 
-対応形式: CSV (.csv), Excel (.xlsx, .xls), JSON (.json)
+Supported formats: CSV (.csv), Excel (.xlsx, .xls), JSON (.json)
 """
 
 import argparse
@@ -17,22 +17,22 @@ from _sdv_utils import apply_seed, read_data, sample_with_seed, write_data
 
 
 def main():
-    parser = argparse.ArgumentParser(description='SDVで単一テーブルの合成データを生成')
-    parser.add_argument('input', type=str, help='入力ファイルパス (.csv, .xlsx, .xls, .json)')
-    parser.add_argument('output', type=str, help='出力ファイルパス (.csv, .xlsx, .xls, .json)')
-    parser.add_argument('--rows', type=int, default=None, help='生成する行数（デフォルト: 入力と同じ）')
+    parser = argparse.ArgumentParser(description='Generate single-table synthetic data with SDV')
+    parser.add_argument('input', type=str, help='Input file path (.csv, .xlsx, .xls, .json)')
+    parser.add_argument('output', type=str, help='Output file path (.csv, .xlsx, .xls, .json)')
+    parser.add_argument('--rows', type=int, default=None, help='Number of rows to generate (default: same as input)')
     parser.add_argument('--synthesizer', type=str, default='gaussian',
                         choices=['gaussian', 'ctgan', 'tvae', 'copulagan'],
-                        help='使用するシンセサイザー（デフォルト: gaussian）')
-    parser.add_argument('--epochs', type=int, default=300, help='CTGAN/TVAE/CopulaGANのエポック数')
-    parser.add_argument('--seed', type=int, default=None, help='再現性のためのシード値（デフォルト: なし）')
+                        help='Synthesizer to use (default: gaussian)')
+    parser.add_argument('--epochs', type=int, default=300, help='Epochs for CTGAN/TVAE/CopulaGAN')
+    parser.add_argument('--seed', type=int, default=None, help='Seed value for reproducibility (default: none)')
     parser.add_argument('--save-model', nargs='?', const='__default__', default=None,
-                        help='学習済みモデルを保存（パス未指定時は出力ファイル名から自動生成）')
+                        help='Save trained model (auto-generate path from output filename if omitted)')
     parser.add_argument('--save-metadata', nargs='?', const='__default__', default=None,
-                        help='メタデータを保存（パス未指定時は出力ファイル名から自動生成）')
+                        help='Save metadata (auto-generate path from output filename if omitted)')
     args = parser.parse_args()
 
-    # SDVインポート（遅延インポートでエラーメッセージを明確に）
+    # SDV import (lazy import for clearer error messages)
     try:
         from sdv.single_table import (
             GaussianCopulaSynthesizer,
@@ -42,17 +42,17 @@ def main():
         )
         from sdv.metadata import Metadata
     except ImportError:
-        print("エラー: SDVがインストールされていません")
-        print("インストール: pip install sdv")
+        print("Error: SDV is not installed")
+        print("Install: pip install sdv")
         return
 
-    # データ読み込み
+    # Load data
     data = read_data(args.input)
 
-    # メタデータ検出
+    # Detect metadata
     metadata = Metadata.detect_from_dataframe(data)
 
-    # シンセサイザー選択
+    # Select synthesizer
     if args.synthesizer == 'gaussian':
         synthesizer = GaussianCopulaSynthesizer(metadata)
     elif args.synthesizer == 'ctgan':
@@ -62,21 +62,21 @@ def main():
     elif args.synthesizer == 'copulagan':
         synthesizer = CopulaGANSynthesizer(metadata, epochs=args.epochs)
 
-    # 学習（再現性のためシードは学習前に設定）
+    # Train (set seed before fitting for reproducibility)
     if args.seed is not None:
         apply_seed(args.seed, synthesizer)
     synthesizer.fit(data)
 
-    # 生成
+    # Generate
     num_rows = args.rows if args.rows else len(data)
     if args.seed is not None:
         apply_seed(args.seed, synthesizer)
     synthetic_data = sample_with_seed(synthesizer, num_rows=num_rows, seed=args.seed)
 
-    # 保存
+    # Save synthetic data
     write_data(synthetic_data, args.output)
 
-    # 出力ファイル名からデフォルト保存先を作成
+    # Build default save paths from output filename
     output_path = Path(args.output)
     default_model_path = output_path.parent / f"{output_path.stem}.sdv.pkl"
     default_metadata_path = output_path.parent / f"{output_path.stem}.metadata.json"
@@ -84,7 +84,7 @@ def main():
     save_metadata = args.save_metadata is not None
     save_model = args.save_model is not None
 
-    # メタデータ保存（オプション）
+    # Save metadata (optional)
     if save_metadata:
         if args.save_metadata in (None, '__default__'):
             metadata_path = str(default_metadata_path)
@@ -92,14 +92,15 @@ def main():
             metadata_path = args.save_metadata
         metadata.save_to_json(metadata_path)
 
-    # モデル保存（オプション）
+    # Save model (optional)
     if save_model:
         if args.save_model in (None, '__default__'):
             model_path = str(default_model_path)
         else:
             model_path = args.save_model
         synthesizer.save(model_path)
-    print("完了")
+    print("Done")
+
 
 if __name__ == '__main__':
     main()
