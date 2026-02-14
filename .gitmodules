@@ -1,6 +1,3 @@
-[submodule "skills/python-rope-refactor"]
-	path = skills/python-rope-refactor
-	url = https://github.com/brian-yu/python-rope-refactor
 [submodule "skills/anthropics-skills"]
 	path = skills/anthropics-skills
 	url = https://github.com/anthropics/skills.git
