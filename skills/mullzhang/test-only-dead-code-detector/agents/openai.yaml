@@ -1,0 +1,4 @@
+interface:
+  display_name: "Test-Only Dead Code"
+  short_description: "Find code used only by tests via Vulture"
+  default_prompt: "Use $test-only-dead-code-detector to run a double-pass Vulture scan and report test-only dead code candidates."
