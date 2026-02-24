@@ -10,7 +10,7 @@ Run `vulture` in two passes and compare findings to isolate test-only references
 ## Workflow
 
 1. Select production paths and test paths.
-2. Run `scripts/find_test_only_dead_code.py` from repository root.
+2. From the target repository root, run the detector script via `$CODEX_HOME/skills/...` (fallback: `~/.codex/skills/...`).
 3. Prioritize `TEST-ONLY CANDIDATES` as "used only by tests" cleanup targets.
 4. Treat `UNUSED EVEN WITH TESTS` as stronger dead-code candidates.
 5. Apply allowlists for dynamic patterns when needed.
@@ -18,7 +18,9 @@ Run `vulture` in two passes and compare findings to isolate test-only references
 ## Quick Start
 
 ```bash
-python ~/.agent/skills/test-only-dead-code-detector/scripts/find_test_only_dead_code.py \
+DETECTOR_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/test-only-dead-code-detector/scripts/find_test_only_dead_code.py"
+
+python "$DETECTOR_SCRIPT" \
   --vulture-bin ./.venv/bin/vulture \
   --prod-path src \
   --prod-path experiments \
@@ -53,7 +55,9 @@ python ~/.agent/skills/test-only-dead-code-detector/scripts/find_test_only_dead_
 ## CI Example
 
 ```bash
-python ~/.agent/skills/test-only-dead-code-detector/scripts/find_test_only_dead_code.py \
+DETECTOR_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/test-only-dead-code-detector/scripts/find_test_only_dead_code.py"
+
+python "$DETECTOR_SCRIPT" \
   --vulture-bin ./.venv/bin/vulture \
   --prod-path src \
   --test-path tests \

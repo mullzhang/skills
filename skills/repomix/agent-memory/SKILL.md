@@ -7,8 +7,8 @@ description: "Use this skill when the user asks to save, remember, recall, or or
 
 A persistent memory space for storing knowledge that survives across conversations.
 
-**Location:** `~/.agent/skills/agent-memory/memories/`
-**Shared config folder:** `.agent` is a shared configuration directory used by multiple AI agents.
+**Location:** `${CODEX_HOME:-$HOME/.codex}/skills/agent-memory/memories/`
+**Shared config folder:** `CODEX_HOME` points to the shared Codex config directory (defaults to `~/.codex`).
 
 ## Proactive Usage
 
@@ -81,20 +81,22 @@ related: [src/core/file/fileProcessor.ts]
 Use summary-first approach to efficiently find relevant memories:
 
 ```bash
+MEMORY_ROOT="${CODEX_HOME:-$HOME/.codex}/skills/agent-memory/memories"
+
 # 1. List categories
-ls ~/.agent/skills/agent-memory/memories/
+ls "$MEMORY_ROOT"/
 
 # 2. View all summaries
-rg "^summary:" ~/.agent/skills/agent-memory/memories/ --no-ignore --hidden
+rg "^summary:" "$MEMORY_ROOT"/ --no-ignore --hidden
 
 # 3. Search summaries for keyword
-rg "^summary:.*keyword" ~/.agent/skills/agent-memory/memories/ --no-ignore --hidden -i
+rg "^summary:.*keyword" "$MEMORY_ROOT"/ --no-ignore --hidden -i
 
 # 4. Search by tag
-rg "^tags:.*keyword" ~/.agent/skills/agent-memory/memories/ --no-ignore --hidden -i
+rg "^tags:.*keyword" "$MEMORY_ROOT"/ --no-ignore --hidden -i
 
 # 5. Full-text search (when summary search isn't enough)
-rg "keyword" ~/.agent/skills/agent-memory/memories/ --no-ignore --hidden -i
+rg "keyword" "$MEMORY_ROOT"/ --no-ignore --hidden -i
 
 # 6. Read specific memory file if relevant
 ```
@@ -110,9 +112,11 @@ rg "keyword" ~/.agent/skills/agent-memory/memories/ --no-ignore --hidden -i
 3. Write file with required frontmatter (use `date +%Y-%m-%d` for current date)
 
 ```bash
-mkdir -p ~/.agent/skills/agent-memory/memories/category-name/
+MEMORY_ROOT="${CODEX_HOME:-$HOME/.codex}/skills/agent-memory/memories"
+
+mkdir -p "$MEMORY_ROOT"/category-name/
 # Note: Check if file exists before writing to avoid accidental overwrites
-cat > ~/.agent/skills/agent-memory/memories/category-name/filename.md << 'EOF'
+cat > "$MEMORY_ROOT"/category-name/filename.md << 'EOF'
 ---
 summary: "Brief description of this memory"
 created: 2025-01-15
@@ -129,9 +133,11 @@ EOF
 - **Update**: When information changes, update the content and add `updated` field to frontmatter
 - **Delete**: Remove memories that are no longer relevant
   ```bash
-  trash ~/.agent/skills/agent-memory/memories/category-name/filename.md
+  MEMORY_ROOT="${CODEX_HOME:-$HOME/.codex}/skills/agent-memory/memories"
+
+  trash "$MEMORY_ROOT"/category-name/filename.md
   # Remove empty category folders
-  rmdir ~/.agent/skills/agent-memory/memories/category-name/ 2>/dev/null || true
+  rmdir "$MEMORY_ROOT"/category-name/ 2>/dev/null || true
   ```
 - **Consolidate**: Merge related memories when they grow
 - **Reorganize**: Move memories to better-fitting categories as the knowledge base evolves
