@@ -14,6 +14,10 @@ Follow this order to reduce wasted investigation time:
 
 ## 2. Status Interpretation
 
+Prefer explicit solver status rows (for example, `Status ...` in final report sections) over loose keyword matches.
+
+Do not treat legend/help lines such as `U => Unbounded` as status evidence; these lines only describe symbols.
+
 `optimal` means a solver-accepted solution was found under current settings, not that the model is semantically correct.
 
 `infeasible` usually means a hard contradiction across constraints or fixed bounds. In mixed-integer models, check strict combinational rules first (mutual exclusivity, fixed assignments, capacity hard limits).
@@ -23,6 +27,8 @@ Follow this order to reduce wasted investigation time:
 `time_limit` means no proof of optimality inside the configured budget. It may still produce an incumbent solution that is usable with a known gap.
 
 `error` means the run failed before valid optimization results were produced (configuration, binary, export, file I/O, memory).
+
+If application-side run summaries conflict with solver logs, prioritize the solver's final status section.
 
 ## 3. High-Value Pattern Clues
 

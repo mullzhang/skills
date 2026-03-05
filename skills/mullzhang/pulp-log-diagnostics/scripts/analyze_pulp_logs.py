@@ -20,6 +20,7 @@ class PatternRule:
     regex: re.Pattern[str]
     diagnosis: str
     action: str
+    exclude_regexes: tuple[re.Pattern[str], ...] = ()
 
 
 @dataclass
@@ -37,12 +38,15 @@ class Evidence:
 @dataclass
 class Metrics:
     objective: float | None = None
+    primal_bound: float | None = None
+    dual_bound: float | None = None
     gap: str | None = None
     solve_time_seconds: float | None = None
     rows: int | None = None
     columns: int | None = None
     elements: int | None = None
     nodes: int | None = None
+    lp_iterations: int | None = None
 
 
 @dataclass
@@ -106,23 +110,29 @@ def _make_rules() -> list[PatternRule]:
             rule_id="infeasible_status",
             severity="high",
             category="feasibility",
-            regex=re.compile(r"(infeasible|no feasible solution)", re.IGNORECASE),
+            regex=re.compile(r"\b(infeasible|no feasible solution)\b", re.IGNORECASE),
             diagnosis="制約系が同時充足できず実行不能になっている可能性が高い。",
             action="LP/MPSを保存し、制約の衝突候補を絞り、IIS解析可能なソルバーで検証する。",
+            exclude_regexes=(
+                re.compile(r"primal infeasible due to tolerance", re.IGNORECASE),
+            ),
         ),
         PatternRule(
             rule_id="unbounded_status",
             severity="high",
             category="modeling",
-            regex=re.compile(r"(unbounded|dual infeasible)", re.IGNORECASE),
+            regex=re.compile(r"\b(unbounded|dual infeasible)\b", re.IGNORECASE),
             diagnosis="目的方向に下限/上限が欠落している可能性がある。",
             action="目的に関与する変数の境界条件と符号を点検する。",
+            exclude_regexes=(
+                re.compile(r"=>\s*unbounded\b", re.IGNORECASE),  # HiGHS legend line
+            ),
         ),
         PatternRule(
             rule_id="time_limit_reached",
             severity="medium",
             category="performance",
-            regex=re.compile(r"(time limit|stopped on time|timelimit)", re.IGNORECASE),
+            regex=re.compile(r"\b(time limit|stopped on time|timelimit)\b", re.IGNORECASE),
             diagnosis="制限時間到達により最適化が途中停止している。",
             action="gap目標、探索パラメータ、Big-M、対称性、初期解の品質を見直す。",
         ),
@@ -158,24 +168,67 @@ def _update_status(current: str, candidate: str) -> str:
     return current
 
 
-def _detect_status(line: str, current: str) -> str:
+def _is_status_noise_line(line: str) -> bool:
+    lowered = line.lower()
+    if "=>" in lowered and any(token in lowered for token in ("unbounded", "infeasible", "optimal", "feasible")):
+        return True
+    if lowered.strip().startswith("src:"):
+        return True
+    return False
+
+
+def _map_status_from_text(text: str) -> str | None:
+    lowered = text.lower()
+    if re.search(r"time limit|stopped on time|timelimit", lowered):
+        return "time_limit"
+    if re.search(r"\binfeasible\b|no feasible solution", lowered):
+        return "infeasible"
+    if re.search(r"\bunbounded\b|dual infeasible", lowered):
+        return "unbounded"
+    if re.search(r"\boptimal\b", lowered):
+        return "optimal"
+    if re.search(r"not solved|undefined", lowered):
+        return "not_solved"
+    return None
+
+
+def _detect_status_from_line(line: str, current: str) -> str:
     lowered = line.lower()
     if re.search(r"(traceback|exception|pulperror|\berror[:\s])", lowered):
         current = _update_status(current, "error")
-    if re.search(r"\boptimal\b", lowered):
-        current = _update_status(current, "optimal")
-    if re.search(r"\binfeasible\b|no feasible solution", lowered):
-        current = _update_status(current, "infeasible")
-    if re.search(r"\bunbounded\b|dual infeasible", lowered):
-        current = _update_status(current, "unbounded")
-    if re.search(r"time limit|stopped on time|timelimit", lowered):
-        current = _update_status(current, "time_limit")
-    if re.search(r"not solved|undefined", lowered):
-        current = _update_status(current, "not_solved")
+    if _is_status_noise_line(line):
+        return current
+    candidate = _map_status_from_text(line)
+    if candidate:
+        current = _update_status(current, candidate)
     return current
 
 
+def _extract_explicit_status(raw_lines: list[tuple[str, int, str]]) -> str | None:
+    patterns = [
+        re.compile(r"^\s*Status\s+(?P<value>.+)$", re.IGNORECASE),
+        re.compile(r"^\s*Model status\s*:\s*(?P<value>.+)$", re.IGNORECASE),
+        re.compile(r"^\s*Result\s*-\s*(?P<value>.+)$", re.IGNORECASE),
+    ]
+    explicit_status: str | None = None
+    for _, _, line in raw_lines:
+        stripped = line.strip()
+        if not stripped or _is_status_noise_line(stripped):
+            continue
+        for pattern in patterns:
+            matched = pattern.match(stripped)
+            if not matched:
+                continue
+            candidate = _map_status_from_text(matched.group("value"))
+            if candidate:
+                explicit_status = candidate
+    return explicit_status
+
+
 def _safe_float(text: str) -> float | None:
+    normalized = text.strip().lower()
+    if normalized in {"inf", "+inf", "-inf", "infinity", "+infinity", "-infinity"}:
+        return None
     try:
         return float(text)
     except (TypeError, ValueError):
@@ -183,33 +236,9 @@ def _safe_float(text: str) -> float | None:
 
 
 def _parse_metrics(line: str, metrics: Metrics) -> None:
-    if metrics.objective is None:
-        matched = re.search(r"Objective value\s*[:=]\s*([-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)", line)
-        if matched:
-            metrics.objective = _safe_float(matched.group(1))
-
-    if metrics.solve_time_seconds is None:
-        matched = re.search(r"(?:Wallclock|Total|Solve)\s*time(?:\s*\([^)]*\))?\s*[:=]\s*([-+]?\d+(?:\.\d+)?)", line, re.IGNORECASE)
-        if matched:
-            metrics.solve_time_seconds = _safe_float(matched.group(1))
-        else:
-            matched = re.search(r"Time\s*\([^)]*seconds\)\s*:\s*([-+]?\d+(?:\.\d+)?)", line, re.IGNORECASE)
-            if matched:
-                metrics.solve_time_seconds = _safe_float(matched.group(1))
-
-    if metrics.gap is None:
-        matched = re.search(r"(?:MIP\s+)?gap\s*[:=]\s*([\d.+\-eE%]+)", line, re.IGNORECASE)
-        if matched:
-            metrics.gap = matched.group(1)
-
-    if metrics.nodes is None:
-        matched = re.search(r"Enumerated nodes\s*:\s*(\d+)", line, re.IGNORECASE)
-        if matched:
-            metrics.nodes = int(matched.group(1))
-
     if metrics.rows is None or metrics.columns is None or metrics.elements is None:
         matched = re.search(
-            r"Problem .* has\s+(\d+)\s+rows,\s+(\d+)\s+columns\s+and\s+(\d+)\s+elements",
+            r"MIP has\s+(\d+)\s+rows;\s+(\d+)\s+cols;\s+(\d+)\s+nonzeros",
             line,
             re.IGNORECASE,
         )
@@ -217,6 +246,75 @@ def _parse_metrics(line: str, metrics: Metrics) -> None:
             metrics.rows = int(matched.group(1))
             metrics.columns = int(matched.group(2))
             metrics.elements = int(matched.group(3))
+        else:
+            matched = re.search(
+                r"Problem .* has\s+(\d+)\s+rows,\s+(\d+)\s+columns\s+and\s+(\d+)\s+elements",
+                line,
+                re.IGNORECASE,
+            )
+            if matched:
+                metrics.rows = int(matched.group(1))
+                metrics.columns = int(matched.group(2))
+                metrics.elements = int(matched.group(3))
+
+    if metrics.objective is None:
+        matched = re.search(r"Objective value\s*[:=]\s*([-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)", line)
+        if matched:
+            metrics.objective = _safe_float(matched.group(1))
+
+    if metrics.primal_bound is None:
+        matched = re.match(r"^\s*Primal bound\s+([^\s]+)", line, re.IGNORECASE)
+        if matched:
+            metrics.primal_bound = _safe_float(matched.group(1))
+            if metrics.objective is None and metrics.primal_bound is not None:
+                metrics.objective = metrics.primal_bound
+
+    if metrics.dual_bound is None:
+        matched = re.match(r"^\s*Dual bound\s+([^\s]+)", line, re.IGNORECASE)
+        if matched:
+            metrics.dual_bound = _safe_float(matched.group(1))
+
+    if metrics.solve_time_seconds is None:
+        matched = re.match(r"^\s*Timing\s+([-+]?\d+(?:\.\d+)?)\s*$", line, re.IGNORECASE)
+        if matched:
+            metrics.solve_time_seconds = _safe_float(matched.group(1))
+        else:
+            matched = re.search(
+                r"(?:Wallclock|Total|Solve)\s*time(?:\s*\([^)]*\))?\s*[:=]\s*([-+]?\d+(?:\.\d+)?)",
+                line,
+                re.IGNORECASE,
+            )
+            if matched:
+                metrics.solve_time_seconds = _safe_float(matched.group(1))
+            else:
+                matched = re.search(r"Time\s*\([^)]*seconds\)\s*:\s*([-+]?\d+(?:\.\d+)?)", line, re.IGNORECASE)
+                if matched:
+                    metrics.solve_time_seconds = _safe_float(matched.group(1))
+
+    if metrics.gap is None:
+        matched = re.match(r"^\s*Gap\s+(.+)$", line, re.IGNORECASE)
+        if matched:
+            value = matched.group(1).strip()
+            if "|" not in value:  # Skip branch-and-bound table header rows.
+                metrics.gap = value
+        else:
+            matched = re.search(r"(?:MIP\s+)?gap\s*[:=]\s*([\d.+\-eE%]+)", line, re.IGNORECASE)
+            if matched:
+                metrics.gap = matched.group(1)
+
+    if metrics.nodes is None:
+        matched = re.match(r"^\s*Nodes\s+(\d+)\s*$", line, re.IGNORECASE)
+        if matched:
+            metrics.nodes = int(matched.group(1))
+        else:
+            matched = re.search(r"Enumerated nodes\s*:\s*(\d+)", line, re.IGNORECASE)
+            if matched:
+                metrics.nodes = int(matched.group(1))
+
+    if metrics.lp_iterations is None:
+        matched = re.match(r"^\s*LP iterations\s+(\d+)\s*$", line, re.IGNORECASE)
+        if matched:
+            metrics.lp_iterations = int(matched.group(1))
 
 
 def _collect_diagnosis(status: str, findings: list[Evidence]) -> tuple[list[str], list[str]]:
@@ -285,26 +383,34 @@ def analyze_logs(
     evidence_counts: dict[str, int] = {}
 
     for source, line_no, line in raw_lines:
-        report.status = _detect_status(line, report.status)
+        report.status = _detect_status_from_line(line, report.status)
         _parse_metrics(line, report.metrics)
 
         for rule in rules:
             if evidence_counts.get(rule.rule_id, 0) >= max_evidence_per_rule:
                 continue
-            if rule.regex.search(line):
-                report.findings.append(
-                    Evidence(
-                        rule_id=rule.rule_id,
-                        severity=rule.severity,
-                        category=rule.category,
-                        source=source,
-                        line_no=line_no,
-                        line=line.strip(),
-                        diagnosis=rule.diagnosis,
-                        action=rule.action,
-                    )
+            if not rule.regex.search(line):
+                continue
+            if any(exclude.search(line) for exclude in rule.exclude_regexes):
+                continue
+
+            report.findings.append(
+                Evidence(
+                    rule_id=rule.rule_id,
+                    severity=rule.severity,
+                    category=rule.category,
+                    source=source,
+                    line_no=line_no,
+                    line=line.strip(),
+                    diagnosis=rule.diagnosis,
+                    action=rule.action,
                 )
-                evidence_counts[rule.rule_id] = evidence_counts.get(rule.rule_id, 0) + 1
+            )
+            evidence_counts[rule.rule_id] = evidence_counts.get(rule.rule_id, 0) + 1
+
+    explicit_status = _extract_explicit_status(raw_lines)
+    if explicit_status is not None:
+        report.status = explicit_status
 
     if lp_path is not None:
         report.artifacts["lp"] = str(lp_path)
@@ -330,7 +436,8 @@ def _report_to_dict(report: Report) -> dict[str, object]:
 
 def _print_report(report: Report) -> None:
     print("== PuLP Log Diagnostics ==")
-    print(f"files: {', '.join(report.files)}")
+    files_text = ", ".join(report.files) if report.files else "(none)"
+    print(f"files: {files_text}")
     print(f"solver: {report.solver}")
     print(f"status: {report.status}")
 
@@ -373,7 +480,6 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument(
         "--log",
         action="append",
-        required=True,
         help="Path to a log file. Pass multiple times to analyze multiple logs.",
     )
     parser.add_argument("--lp", help="Optional LP artifact path.")
@@ -391,18 +497,33 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 
 def main(argv: list[str]) -> int:
     args = parse_args(argv)
-    log_paths = [Path(p) for p in args.log]
-    missing = [str(p) for p in log_paths if not p.exists()]
-    if missing:
-        print("Missing log files:", file=sys.stderr)
-        for path in missing:
-            print(f"  - {path}", file=sys.stderr)
+    log_paths = [Path(p) for p in args.log] if args.log else []
+    lp_path = Path(args.lp) if args.lp else None
+    mps_path = Path(args.mps) if args.mps else None
+
+    if not log_paths and lp_path is None and mps_path is None:
+        print("No input files provided. Specify at least one of --log/--lp/--mps.", file=sys.stderr)
+        return 2
+
+    missing_logs = [str(p) for p in log_paths if not p.exists()]
+    missing_artifacts: list[str] = []
+    if lp_path is not None and not lp_path.exists():
+        missing_artifacts.append(f"lp: {lp_path}")
+    if mps_path is not None and not mps_path.exists():
+        missing_artifacts.append(f"mps: {mps_path}")
+
+    if missing_logs or missing_artifacts:
+        print("Missing specified input files:", file=sys.stderr)
+        for path in missing_logs:
+            print(f"  - log: {path}", file=sys.stderr)
+        for artifact in missing_artifacts:
+            print(f"  - {artifact}", file=sys.stderr)
         return 2
 
     report = analyze_logs(
         log_paths=log_paths,
-        lp_path=Path(args.lp) if args.lp else None,
-        mps_path=Path(args.mps) if args.mps else None,
+        lp_path=lp_path,
+        mps_path=mps_path,
         encoding=args.encoding,
         max_evidence_per_rule=max(1, args.max_evidence_per_rule),
     )
