@@ -1,0 +1,4 @@
+interface:
+  display_name: "PuLP Log Diagnostics"
+  short_description: "Analyze PuLP solver logs for infeasible/slow root causes"
+  default_prompt: "Use $pulp-log-diagnostics to parse PuLP and solver logs, identify likely root causes, and propose prioritized next debugging actions."
