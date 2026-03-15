@@ -1,4 +1,4 @@
 interface:
   display_name: "PuLP Log Diagnostics"
-  short_description: "Analyze PuLP solver logs for infeasible/slow root causes"
-  default_prompt: "Use $pulp-log-diagnostics to parse PuLP and solver logs, identify likely root causes, and propose prioritized next debugging actions."
+  short_description: "Analyze PuLP logs and orchestrate solver-specific IIS execution"
+  default_prompt: "Use $pulp-log-diagnostics to parse PuLP and solver logs, identify likely root causes, ask the user which IIS solver to use, and run IIS. If the selected solver is not highs/gurobi/cplex, create per-run custom IIS code and execute it via --custom-runner."

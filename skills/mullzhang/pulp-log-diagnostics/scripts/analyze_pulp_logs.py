@@ -6,6 +6,8 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import shlex
+import shutil
 import sys
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -50,6 +52,18 @@ class Metrics:
 
 
 @dataclass
+class IISPlan:
+    applicability: str = "not_required"
+    reason: str = ""
+    recommended_solver: str | None = None
+    detected_iis_solvers: list[str] = field(default_factory=list)
+    artifact_for_iis: str | None = None
+    commands: list[str] = field(default_factory=list)
+    expected_outputs: list[str] = field(default_factory=list)
+    fallback_actions: list[str] = field(default_factory=list)
+
+
+@dataclass
 class Report:
     files: list[str] = field(default_factory=list)
     solver: str = "unknown"
@@ -59,6 +73,7 @@ class Report:
     diagnosis: list[str] = field(default_factory=list)
     next_actions: list[str] = field(default_factory=list)
     artifacts: dict[str, str] = field(default_factory=dict)
+    iis_plan: IISPlan | None = None
 
 
 STATUS_PRIORITY = {
@@ -366,6 +381,145 @@ def _collect_diagnosis(status: str, findings: list[Evidence]) -> tuple[list[str]
     return diagnosis, dedup_actions
 
 
+def _detect_iis_solvers() -> list[str]:
+    detected: list[str] = []
+
+    # HiGHS IIS is available via highspy in Python API.
+    try:
+        import highspy  # type: ignore  # noqa: F401
+
+        detected.append("highs")
+    except Exception:
+        if shutil.which("highs"):
+            detected.append("highs")
+
+    if shutil.which("gurobi_cl"):
+        detected.append("gurobi")
+    else:
+        try:
+            import gurobipy  # type: ignore  # noqa: F401
+
+            detected.append("gurobi")
+        except Exception:
+            pass
+
+    if shutil.which("cplex"):
+        detected.append("cplex")
+    else:
+        try:
+            import cplex  # type: ignore  # noqa: F401
+
+            detected.append("cplex")
+        except Exception:
+            pass
+
+    seen: set[str] = set()
+    ordered_detected: list[str] = []
+    for solver in detected:
+        if solver not in seen:
+            ordered_detected.append(solver)
+            seen.add(solver)
+    return ordered_detected
+
+
+def _build_iis_plan(status: str, lp_path: Path | None, mps_path: Path | None) -> IISPlan:
+    plan = IISPlan()
+
+    if status != "infeasible":
+        plan.reason = "statusがinfeasibleではないため、IIS解析は不要。"
+        return plan
+
+    artifact_path = mps_path or lp_path
+    if artifact_path is None:
+        plan.applicability = "blocked"
+        plan.reason = "IIS解析に必要なLP/MPSが未指定。"
+        plan.fallback_actions = [
+            "LPまたはMPSを必ず保存して同一runディレクトリへ配置する。",
+            "制約を段階的に有効化して、最小矛盾集合に近い条件を特定する。",
+            "ハード制約にslack変数を追加してペナルティ最小化し、違反制約候補を抽出する。",
+        ]
+        return plan
+
+    artifact = str(artifact_path)
+    artifact_q = shlex.quote(artifact)
+    stem = shlex.quote(str(artifact_path.with_suffix("")))
+    run_iis_script = Path(__file__).resolve().parent / "run_iis.py"
+    run_iis_script_q = shlex.quote(str(run_iis_script))
+
+    plan.applicability = "recommended"
+    plan.reason = "infeasibleが確定しており、IISで衝突制約を局所化できる可能性が高い。"
+    plan.artifact_for_iis = artifact
+    plan.detected_iis_solvers = _detect_iis_solvers()
+
+    highs_cmd = (
+        f"python {run_iis_script_q} --model {artifact_q} "
+        "--solver highs --highs-iis-strategy irreducible"
+    )
+    gurobi_cmd = (
+        f"python {run_iis_script_q} --model {artifact_q} --solver gurobi"
+    )
+    cplex_cmd = (
+        "cplex -c "
+        f"\"read {artifact_q}\" "
+        "\"optimize\" "
+        "\"conflict refiner\" "
+        f"\"write {stem}.conflict.clp\" "
+        "\"quit\""
+    )
+
+    preferred_order = ["highs", "gurobi", "cplex"]
+    plan.recommended_solver = next(
+        (solver for solver in preferred_order if solver in plan.detected_iis_solvers),
+        "user_select_required",
+    )
+
+    plan.commands = [
+        "# Ask user which solver to use before running IIS (highs/gurobi/cplex/other).",
+        f"python {run_iis_script_q} --model {artifact_q}",
+        (
+            "# For other solvers, create a custom runner and execute: "
+            f"python {run_iis_script_q} --model {artifact_q} --solver <custom_solver> "
+            "--custom-runner /tmp/pulp_iis_custom_<custom_solver>_runner.py"
+        ),
+    ]
+    plan.expected_outputs = []
+
+    if "highs" in plan.detected_iis_solvers:
+        plan.commands.extend(
+            [
+                "# HiGHS (highspy)",
+                highs_cmd,
+            ]
+        )
+        plan.expected_outputs.append(f"{artifact_path.with_suffix('.iis.lp')} (HiGHSでIIS抽出時)")
+
+    if "gurobi" in plan.detected_iis_solvers:
+        plan.commands.extend(
+            [
+                "# Gurobi Python API",
+                gurobi_cmd,
+            ]
+        )
+        plan.expected_outputs.append(f"{artifact_path.with_suffix('.iis.ilp')} (GurobiでIIS抽出時)")
+
+    if "cplex" in plan.detected_iis_solvers:
+        plan.commands.extend(
+            [
+                "# CPLEX CLI",
+                cplex_cmd,
+            ]
+        )
+        plan.expected_outputs.append(f"{artifact_path.with_suffix('')}.conflict.clp (CPLEX conflict refiner時)")
+
+    plan.expected_outputs.append("IISに含まれる制約名リスト（業務制約への逆引き用）")
+    plan.fallback_actions = [
+        "IISソルバーが無い場合は、制約をブロック単位で段階有効化して矛盾発生点を特定する。",
+        "同じrunの feasible ケースとの差分で constraints_active を比較し、追加・厳格化制約を優先調査する。",
+        "slack付き実行可能化モデル（違反ペナルティ最小化）で上位違反制約を抽出する。",
+    ]
+    return plan
+
+
 def analyze_logs(
     log_paths: list[Path],
     lp_path: Path | None,
@@ -418,6 +572,7 @@ def analyze_logs(
         report.artifacts["mps"] = str(mps_path)
 
     report.diagnosis, report.next_actions = _collect_diagnosis(report.status, report.findings)
+    report.iis_plan = _build_iis_plan(report.status, lp_path=lp_path, mps_path=mps_path)
     return report
 
 
@@ -431,6 +586,7 @@ def _report_to_dict(report: Report) -> dict[str, object]:
         "diagnosis": report.diagnosis,
         "next_actions": report.next_actions,
         "artifacts": report.artifacts,
+        "iis_plan": asdict(report.iis_plan) if report.iis_plan else None,
     }
 
 
@@ -473,6 +629,23 @@ def _print_report(report: Report) -> None:
     print("next_actions:")
     for idx, item in enumerate(report.next_actions, start=1):
         print(f"  {idx}. {item}")
+
+    if report.iis_plan:
+        print("iis_plan:")
+        print(f"  - applicability: {report.iis_plan.applicability}")
+        print(f"  - reason: {report.iis_plan.reason}")
+        if report.iis_plan.recommended_solver:
+            print(f"  - recommended_solver: {report.iis_plan.recommended_solver}")
+        detected = ", ".join(report.iis_plan.detected_iis_solvers) if report.iis_plan.detected_iis_solvers else "none"
+        print(f"  - detected_iis_solvers: {detected}")
+        if report.iis_plan.artifact_for_iis:
+            print(f"  - artifact_for_iis: {report.iis_plan.artifact_for_iis}")
+        for cmd in report.iis_plan.commands:
+            print(f"  - command: {cmd}")
+        for item in report.iis_plan.expected_outputs:
+            print(f"  - expected_output: {item}")
+        for item in report.iis_plan.fallback_actions:
+            print(f"  - iis_fallback: {item}")
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
