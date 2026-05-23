@@ -1,0 +1,4 @@
+interface:
+  display_name: "Issue Dupe Check"
+  short_description: "Find likely duplicate GitHub issues before filing"
+  default_prompt: "Use $github-issue-dupe-check to search GitHub issues with gh, inspect candidates, and classify them as duplicate, related, or distinct."
