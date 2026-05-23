@@ -1,0 +1,13 @@
+name: skills
+version: 0.1.0
+description: Personal AI agent skills by mullzhang
+author: mullzhang
+targets:
+- agent-skills
+dependencies:
+  apm: []
+  mcp: []
+includes: auto
+devDependencies:
+  apm: []
+scripts: {}

@@ -177,3 +177,6 @@ pyrightconfig.json
 
 # Codex
 .system
+
+# macOS
+.DS_Store
