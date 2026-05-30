@@ -1,0 +1,4 @@
+interface:
+  display_name: "MD Questionnaire"
+  short_description: "Ask many questions through a Markdown form"
+  default_prompt: "Use $md-questionnaire to collect requirement answers in a Markdown questionnaire before continuing."
