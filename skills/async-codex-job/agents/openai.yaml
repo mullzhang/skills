@@ -1,0 +1,4 @@
+interface:
+  display_name: "Async Codex Job"
+  short_description: "Run long jobs and continue after completion"
+  default_prompt: "Use $async-codex-job to launch this long-running command, return immediately, then inspect results and continue the task when it finishes."
