@@ -1,0 +1,4 @@
+interface:
+  display_name: "Async Tmux Agent Job"
+  short_description: "Run async jobs and continue in same tmux pane"
+  default_prompt: "Use $async-tmux-agent-job to run this long command asynchronously, return immediately, then continue in the same tmux pane when it finishes."

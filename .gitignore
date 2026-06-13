@@ -178,5 +178,8 @@ pyrightconfig.json
 # Codex
 .system
 
+# Async tmux agent jobs
+.async-tmux-agent-jobs/
+
 # macOS
 .DS_Store
