@@ -9,6 +9,13 @@ After generating code, review the items below. If any item applies, revision is 
 - [ ] "Just in case" default values are not hiding bugs
 - [ ] No branch paths are impossible in the current codebase
 
+## Compatibility Check
+
+- [ ] No compatibility behavior was inferred from guessed external usage
+- [ ] No backward compatibility, aliases, migration shims, silent fallbacks, or default-value fallbacks exist unless explicitly required
+- [ ] Plausible but unstated compatibility risks were surfaced instead of implemented as fallback code
+- [ ] Breaking changes remove obsolete names, branches, docs, examples, and tests unless explicit migration support is required
+
 ## DRY Check
 
 - [ ] Identical or near-identical logic does not exist in two or more places
