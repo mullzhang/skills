@@ -1,4 +1,0 @@
-[submodule "skills/anthropics-skills"]
-	path = skills/anthropics-skills
-	url = https://github.com/anthropics/skills.git
-	branch = main
