@@ -1,6 +1,6 @@
 ---
 name: md-questionnaire
-description: Create a finite Markdown questionnaire file that contains grouped questions, recommended options, answer fields, and optional rationale fields, then read the completed file and continue from the user's answers. Use when Codex needs to ask multiple questions for requirements, specifications, acceptance criteria, product decisions, design choices, implementation tradeoffs, or any situation where conversational back-and-forth would fatigue the user or make the remaining question count unclear.
+description: Create a finite Markdown questionnaire file that contains grouped questions, recommended options, answer fields, and optional rationale fields, then read the completed file and continue from the user's answers. Use when the agent needs to ask multiple questions (roughly 4 or more) for requirements, specifications, acceptance criteria, product decisions, design choices, implementation tradeoffs, or any situation where conversational back-and-forth would fatigue the user or make the remaining question count unclear.
 ---
 
 # Markdown Questionnaire

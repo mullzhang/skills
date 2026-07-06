@@ -69,19 +69,18 @@ After the user answers:
 
 Use this mode when the user wants to answer in `md`, a `質問票`, or all at once.
 
-Combine this skill with `md-questionnaire`:
+Question formatting (Japanese labels, numbered options with a recommendation, `回答:` and `理由/補足（任意）:` fields) follows the `md-questionnaire` skill. If it is available, read and follow its `SKILL.md` before creating the questionnaire file. If it is not, the round template below already follows the same conventions, so use it as-is.
 
-1. Use grill-me to identify the highest-leverage lines of questioning.
-2. Use md-questionnaire's Markdown answer-form structure for the output file.
-3. Keep all rounds in a single Markdown file for the whole grill-me session.
-4. Keep each round finite. Prefer 5-10 questions for one round.
-5. Group questions by decision area, such as goal, user, scope, constraints, risk, implementation, rollout, or success criteria.
-6. Include recommended answers, but preserve room for free-text where the decision space is open.
-7. Tell the user which file to fill in and do not continue asking the same questions conversationally.
+Rules for questionnaire content:
+
+1. Keep each round finite. Prefer 5-10 questions for one round.
+2. Group questions by decision area, such as goal, user, scope, constraints, risk, implementation, rollout, or success criteria.
+3. Include recommended answers, but preserve room for free-text where the decision space is open.
+4. Tell the user which file to fill in and do not continue asking the same questions conversationally.
 
 ### Single-File Round Log
 
-Use one Markdown file per grill-me session, not one file per round. Name it descriptively, such as `grill_me_questionnaire.md` or `<topic>_grill_me.md`.
+This round log is what grill-me adds on top of md-questionnaire's answer-form conventions. Use one Markdown file per grill-me session, not one file per round. Name it descriptively, such as `grill_me_questionnaire.md` or `<topic>_grill_me.md`.
 
 For each new round:
 
@@ -122,8 +121,6 @@ Round section template:
 理由/補足（任意）:
 ```
 
-When combining with `md-questionnaire`, use grill-me's single-file round log rule for file organization and md-questionnaire's answer-form conventions for individual questions.
-
 For a concrete single-file, multi-round questionnaire example, read `references/sample_questionnaire.md` when needed.
 
 For deep uncertainty, use rounds instead of one huge questionnaire:
@@ -131,8 +128,6 @@ For deep uncertainty, use rounds instead of one huge questionnaire:
 - Round 1: expose the core assumptions and constraints.
 - Read the completed answers in the same file.
 - Round 2: append only follow-up questions that depend on Round 1 answers.
-
-If the `md-questionnaire` skill is available, read and follow its `SKILL.md` before creating the questionnaire file. If it is not available, still create a finite Markdown questionnaire with Japanese labels, answer fields, and recommended options.
 
 ## Summary
 

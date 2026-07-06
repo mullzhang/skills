@@ -1,6 +1,6 @@
 ---
 name: sdv-synthetic-data
-description: "Generate synthetic data with SDV (Synthetic Data Vault). Learn patterns from real data with machine learning and produce privacy-preserving synthetic data. Use cases: (1) single-table synthetic data generation, (2) multi-table (relational DB) synthetic data generation, (3) time-series synthetic data generation, (4) synthetic data quality evaluation, and (5) metadata and constraint setup"
+description: "Generate synthetic data with SDV (Synthetic Data Vault) using bundled scripts, without ever reading the user's data content. Use cases: (1) single-table synthetic data generation, (2) multi-table (relational DB) synthetic data generation, (3) synthetic data quality evaluation, and (4) metadata and constraint setup. Time-series generation has no bundled script and requires writing a custom SDV script."
 ---
 
 # SDV Synthetic Data Generation
@@ -15,10 +15,9 @@ Use SDV (Synthetic Data Vault) to generate high-quality synthetic data that lear
 
 ### Prohibited Actions (Never Do These)
 
-1. **Do not read data files with the `Read` tool**
-   - Restricted extensions: `.csv`, `.xlsx`, `.xls`, `.json`, `.pkl`, `.html`, `.txt`
-   - Do not inspect or display the user's data content
-   - Do not inspect generated synthetic data content either
+1. **Do not read data content**
+   - Never open the user's input data or the generated synthetic data with the `Read` tool or shell commands (`cat`, `head`, etc.), regardless of extension (`.csv`, `.xlsx`, `.xls`, `.json`, `.pkl`)
+   - This restriction is about data rows, not file types: metadata JSON, config files, and quality/diagnostic reports (`.html`, `.txt`) contain structure and scores, not row values, so reading them is allowed and needed for the workflow
 
 2. **Do not generate data preview code**
    - Do not include `print(data)`, `print(df)`, `data.head()`, `data.tail()`, `data.sample()`, etc.
@@ -64,47 +63,17 @@ Always choose execution commands to match the **target project's environment** (
 
 ## Workflow
 
-Follow these steps when generating synthetic data.
-All scripts accept options as runtime arguments, so complete all confirmations in Steps 1 to 4 before executing Step 5.
+Confirm the run parameters with the user first, then execute the bundled script once with all options set. Skip any point the user has already specified in their request. Confirm the remaining points (use `AskUserQuestion` with multiple questions in one call when the tool is available; otherwise ask in chat, presenting the default as the recommended option):
 
-1. **Confirm number of rows**: Ask the user how many rows to generate (`num_rows`). Use the `AskUserQuestion` tool with the following prompt:
-   - Question: "How many rows of synthetic data should be generated?"
-   - Header: "Row Count"
-   - Options:
-     - "Same as source data (Recommended)" - Generate the same number of rows as the source data
-     - "1,000 rows" - Generate 1,000 rows
-     - "10,000 rows" - Generate 10,000 rows
-     - "100,000 rows" - Generate 100,000 rows
-   - If the user selects "Other", use the numeric value they enter
-
-2. **Confirm seed value**: Confirm the seed value (`seed`) for reproducibility. Use the `AskUserQuestion` tool with the following prompt:
-   - Question: "Do you want to specify a seed value for reproducibility?"
-   - Header: "Seed Value"
-   - Options:
-     - "Do not specify (Random) (Recommended)" - Generate randomly without a seed
-     - "42" - Use seed 42 (common default)
-     - "123" - Use seed 123
-     - "0" - Use seed 0
-   - If the user selects "Other", use the numeric value they enter
-   - If a seed is provided, set random seeds and pass it only when `sample` supports the `seed` argument (see script implementation)
-
-3. **Select synthesizer**: Confirm the synthesizer type if needed
-
-4. **Confirm model and metadata saving**: Ask whether trained artifacts should be saved for reuse. Use the `AskUserQuestion` tool with the following prompt:
-   - Question: "Do you want to save the trained synthesizer and metadata?"
-   - Header: "Model Save"
-   - Options:
-     - "Save both (Recommended)" - Save both synthesizer and metadata
-     - "Synthesizer only" - Save trained synthesizer only
-     - "Do not save" - Finish without saving
-   - See script options (`--save-model`, `--save-metadata`) for save/load details
-
-5. **Generate data**: Execute scripts by passing all confirmed options from Steps 1 to 4 (row count, seed value, synthesizer, save settings) as arguments
+1. **Row count** (`--rows`): default is the same row count as the source data.
+2. **Seed** (`--seed`): default is random (no seed); offer a fixed seed for reproducibility.
+3. **Synthesizer** (`--synthesizer`): default `gaussian`; see the selection table below. Skip asking when the default is clearly appropriate.
+4. **Saving artifacts** (`--save-model`, `--save-metadata`): recommend saving both the trained synthesizer and metadata for reuse.
 
 ## Quick Start
 
 Use `scripts/generate_single_table.py` to generate synthetic data for a single table.
-**Note**: Scripts exist under `.codex/skills/sdv-synthetic-data/scripts/`. Do not create new scripts; execute existing scripts directly (example: `uv run python .codex/skills/sdv-synthetic-data/scripts/generate_single_table.py ...`).
+**Note**: Run the bundled scripts from this skill's own `scripts/` directory (the directory containing this SKILL.md, wherever the skill is installed). Do not write new scripts for supported cases; execute the existing ones directly (example: `uv run python <path-to-this-skill>/scripts/generate_single_table.py input.csv output.csv --rows 1000`).
 
 ## Synthesizer Selection
 
@@ -147,7 +116,7 @@ Use `generate_multi_table.py`. Specify `tables` and `relationships` in the confi
 
 ## Time-Series Data
 
-Time-series generation is currently unsupported by existing scripts. Add a new script if needed.
+No bundled script covers time-series generation. If the user needs it, write a per-run script using SDV's `PARSynthesizer`, keeping the same privacy restrictions (no data preview, no value logging).
 
 ## Quality Evaluation
 

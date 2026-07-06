@@ -18,12 +18,14 @@ This skill helps organize cluttered directories by:
 
 ## Workflow
 
+Both scripts live in this skill's `scripts/` directory (the directory containing this SKILL.md, wherever the skill is installed) and can run from any working directory.
+
 ### Step 1: Analyze the Directory
 
 Run the analysis script to collect file metadata:
 
 ```bash
-python scripts/analyze_files.py <directory-path> [-r] [-t TIME_THRESHOLD]
+python <path-to-this-skill>/scripts/analyze_files.py <directory-path> [-r] [-t TIME_THRESHOLD]
 ```
 
 **Arguments:**
@@ -35,7 +37,7 @@ python scripts/analyze_files.py <directory-path> [-r] [-t TIME_THRESHOLD]
 **Example:**
 ```bash
 # Analyze Downloads folder with 24-hour clustering threshold
-python scripts/analyze_files.py ~/Downloads -t 86400 -o analysis.json
+python <path-to-this-skill>/scripts/analyze_files.py ~/Downloads -t 86400 -o analysis.json
 ```
 
 The script outputs comprehensive analysis including:
@@ -116,7 +118,7 @@ Shall I proceed with this organization?
 Once approved, save the grouping plan as JSON and execute:
 
 ```bash
-python scripts/organize_files.py plan.json [-n] [-c]
+python <path-to-this-skill>/scripts/organize_files.py plan.json [-n] [-c]
 ```
 
 **Arguments:**
@@ -133,13 +135,13 @@ python scripts/organize_files.py plan.json [-n] [-c]
 **Example:**
 ```bash
 # Preview the organization
-python scripts/organize_files.py plan.json --dry-run
+python <path-to-this-skill>/scripts/organize_files.py plan.json --dry-run
 
 # Execute (move files)
-python scripts/organize_files.py plan.json
+python <path-to-this-skill>/scripts/organize_files.py plan.json
 
 # Or copy instead of move
-python scripts/organize_files.py plan.json --copy
+python <path-to-this-skill>/scripts/organize_files.py plan.json --copy
 ```
 
 ## Best Practices
@@ -167,35 +169,6 @@ python scripts/organize_files.py plan.json --copy
 - Handle filename conflicts gracefully (append counter)
 - Preserve file timestamps and permissions
 
-## Common Usage Patterns
-
-**Pattern 1: Quick Desktop Cleanup**
-```
-User: "Clean up my Desktop"
-1. Run analysis on ~/Desktop with recursive
-2. Group by temporal clusters and semantic meaning
-3. Present proposal with 5-8 logical groups
-4. Execute with dry-run, then real move
-```
-
-**Pattern 2: Monthly Download Organization**
-```
-User: "Organize last month's downloads"
-1. Run analysis filtering by date
-2. Group by file type with context (work docs, personal, media)
-3. Create monthly subfolder structure
-4. Execute organization
-```
-
-**Pattern 3: Project-Based Sorting**
-```
-User: "Sort these files by project"
-1. Analyze file names for project indicators
-2. Use temporal clustering to identify project sessions
-3. Group by detected project names
-4. Present proposal highlighting how projects were identified
-```
-
 ## Handling Edge Cases
 
 **Duplicate Names**: Script automatically appends counter (file_1.txt, file_2.txt)
@@ -211,15 +184,3 @@ User: "Sort these files by project"
 - Use broader categories (by date or type)
 
 **Already Organized**: Skip files already in logical subdirectories
-
-## Scripts Reference
-
-**scripts/analyze_files.py**
-- Collects file metadata and statistics
-- Performs temporal clustering analysis
-- Outputs JSON with comprehensive file information
-
-**scripts/organize_files.py**
-- Executes grouping plan by moving/copying files
-- Handles conflicts and errors gracefully
-- Provides detailed progress output and summary

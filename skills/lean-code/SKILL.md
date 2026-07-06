@@ -80,6 +80,8 @@ def process(data):
 
 ## Post-Generation Self-Review
 
+For a fuller checklist (over-defensiveness, compatibility, DRY, YAGNI), read `references/review_checklist.md` when reviewing a larger diff or refactor.
+
 Before outputting code, ask yourself:
 
 - Is there defensive logic that starts with "if ..."? Is that scenario actually possible now?

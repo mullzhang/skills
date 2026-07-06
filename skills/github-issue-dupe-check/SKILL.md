@@ -11,7 +11,7 @@ Use this skill before opening a GitHub issue, or when a duplicate bot flags an i
 
 1. Identify the target repository (`owner/name`) and the draft issue title/body.
 2. Search with both symptom language and implementation/internal terms. Do not rely on one query.
-3. Run the candidate collector script when a draft file exists.
+3. Run the candidate collector script: pass `--draft` when a draft file exists, or `--title`/`--body` otherwise.
 4. Inspect likely candidates with `gh issue view`, including closed issues.
 5. Classify each candidate as:
    - `duplicate`: same user-visible bug or likely same root cause; one issue should be closed.
@@ -25,10 +25,10 @@ Use this skill before opening a GitHub issue, or when a duplicate bot flags an i
 
 ## Candidate Collection
 
-Use the bundled script from the repository root or from any workspace:
+Use the bundled script in this skill's `scripts/` directory (the directory containing this SKILL.md, wherever the skill is installed). It can run from any working directory:
 
 ```bash
-python skills/mullzhang/github-issue-dupe-check/scripts/collect_issue_candidates.py \
+python <path-to-this-skill>/scripts/collect_issue_candidates.py \
   --repo openai/codex \
   --draft path/to/issue-draft.md \
   --output /tmp/issue-dupe-candidates.json
@@ -37,7 +37,7 @@ python skills/mullzhang/github-issue-dupe-check/scripts/collect_issue_candidates
 If there is no draft file:
 
 ```bash
-python skills/mullzhang/github-issue-dupe-check/scripts/collect_issue_candidates.py \
+python <path-to-this-skill>/scripts/collect_issue_candidates.py \
   --repo openai/codex \
   --title "TUI $ autocomplete shows inaccessible App Directory entries" \
   --body "Typing $ shows irrelevant [App] suggestions from codex_app_directory..." \
@@ -91,7 +91,6 @@ with entries like:
 ```
 
 This suggests SOURCE is being included in SURFACE.
-```
 ````
 
 Closing the newer issue:

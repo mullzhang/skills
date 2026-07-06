@@ -13,6 +13,8 @@ https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompti
 
 Use the live page for the Fable-specific prompting patterns. Do not rely on remembered guidance, and do not proceed as if the page was checked unless it was actually consulted during this skill run.
 
+If the page cannot be fetched in this environment, state that clearly, draft the prompt from general prompting principles, and label the draft as not verified against the current guide. Never claim the page was consulted when it was not.
+
 ## Input
 
 Use the following as the raw task request when present:
