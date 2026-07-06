@@ -1,4 +1,4 @@
 interface:
   display_name: "Fable Prompt Tuner"
-  short_description: "Draft Fable-ready prompts for review"
-  default_prompt: "Use $fable-prompt-tuner to turn this request into a Fable-ready prompt draft for user review."
+  short_description: "Draft prompts that run in Fable"
+  default_prompt: "Use $fable-prompt-tuner to turn this request into a prompt to run in Fable while preserving the original task and deliverable."
