@@ -1,7 +1,6 @@
 ---
 name: fable-prompt-tuner
 description: Rewrite a rough user request into a Claude Fable 5-ready prompt draft after consulting the current Claude Fable 5 prompting guide. Use when the user wants to prepare, organize, refine, or tune a prompt for Fable before deciding whether to run it.
-argument-hint: "[raw task request]"
 ---
 
 # Fable Prompt Tuner
@@ -31,6 +30,13 @@ If no arguments are provided, use the current user message and relevant conversa
    - Return the prompt draft for the user to review or copy into their Fable run.
    - Do not send, execute, launch, or hand off the prompt to Fable.
    - Do not claim Fable has started, accepted, or run the task.
+
+## Prompt Draft Constraints
+
+- Treat the required reference page as guidance for drafting, not as task content for Fable.
+  Do not include a sentence such as "follow the official Fable 5 prompting guide" or a URL to the guide in the generated prompt unless the user's target task itself requires that citation.
+- Do not add instructions to use subagents, delegate subtasks, or run parallel agents unless the user explicitly asks for that behavior.
+- Preserve the user's actual objective and practical constraints. Avoid adding scaffolding that describes how this skill was used to create the prompt.
 
 ## Output Shape
 
