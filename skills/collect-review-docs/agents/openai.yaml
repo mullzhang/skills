@@ -1,0 +1,4 @@
+interface:
+  display_name: "Collect Review Docs"
+  short_description: "Collect candidate review documents safely"
+  default_prompt: "Use $collect-review-docs to list review-document candidates from a folder, then copy selected files to a destination."
