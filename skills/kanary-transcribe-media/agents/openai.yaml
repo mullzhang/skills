@@ -1,0 +1,4 @@
+interface:
+  display_name: "Kanary Transcribe Media"
+  short_description: "Transcribe MP4/WAV with Kanary to Markdown"
+  default_prompt: "Use $kanary-transcribe-media to transcribe this MP4 or WAV beside the source as Markdown and JSON."

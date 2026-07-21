@@ -1,0 +1,142 @@
+#!/usr/bin/env python3
+"""Render Kanary transcript JSON as timestamped Markdown."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import math
+from pathlib import Path
+from typing import Any
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("source", type=Path)
+    parser.add_argument("transcript", type=Path)
+    parser.add_argument("summary", type=Path)
+    parser.add_argument("output", type=Path)
+    return parser.parse_args()
+
+
+def format_seconds(value: float) -> str:
+    total = math.floor(value)
+    hours, remainder = divmod(total, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    if hours:
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+    return f"{minutes:02d}:{seconds:02d}"
+
+
+def load_transcript(path: Path) -> tuple[float, list[dict[str, Any]], int]:
+    with path.open(encoding="utf-8") as stream:
+        data = json.load(stream)
+
+    duration = data.get("duration")
+    transcript = data.get("transcript")
+    if not isinstance(duration, (int, float)):
+        raise SystemExit("Kanary JSON must contain numeric duration")
+    if not isinstance(transcript, dict):
+        raise SystemExit("Kanary JSON must contain transcript object")
+
+    segments = transcript.get("segments")
+    diagnostics = transcript.get("diagnostics")
+    if not isinstance(segments, list):
+        raise SystemExit("Kanary JSON must contain transcript.segments array")
+    if not isinstance(diagnostics, list):
+        raise SystemExit("Kanary JSON must contain transcript.diagnostics array")
+
+    required = {"start_seconds", "end_seconds", "channel", "text"}
+    for index, segment in enumerate(segments):
+        if not isinstance(segment, dict) or not required.issubset(segment):
+            raise SystemExit(f"invalid segment at index {index}")
+        if not isinstance(segment["start_seconds"], (int, float)):
+            raise SystemExit(f"invalid start_seconds at segment {index}")
+        if not isinstance(segment["end_seconds"], (int, float)):
+            raise SystemExit(f"invalid end_seconds at segment {index}")
+        if not isinstance(segment["channel"], str):
+            raise SystemExit(f"invalid channel at segment {index}")
+        if not isinstance(segment["text"], str):
+            raise SystemExit(f"invalid text at segment {index}")
+
+    return float(duration), segments, len(diagnostics)
+
+
+def render_markdown(
+    source: Path,
+    duration: float,
+    segments: list[dict[str, Any]],
+    summary: str,
+) -> str:
+    channels = {segment["channel"] for segment in segments}
+    lines = [
+        f"# {source.stem} — 文字起こし",
+        "",
+        f"- 元ファイル: `{source.name}`",
+        f"- 録音時間: {format_seconds(duration)}",
+        f"- セグメント数: {len(segments)}",
+        "- 生成元: Kanary",
+        "- 注意: 自動文字起こしのため、誤認識を含む可能性があります。",
+        "",
+        "## 要約",
+        "",
+        summary,
+        "",
+        "## 文字起こし",
+        "",
+    ]
+
+    show_channel = len(channels) > 1
+    for segment in segments:
+        start = format_seconds(float(segment["start_seconds"]))
+        end = format_seconds(float(segment["end_seconds"]))
+        channel = f" ({segment['channel']})" if show_channel else ""
+        text = segment["text"].strip().replace("\r\n", "\n").replace("\r", "\n")
+        lines.extend([f"[{start}–{end}]{channel} {text}", ""])
+
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def main() -> None:
+    args = parse_args()
+    source = args.source.resolve(strict=True)
+    transcript = args.transcript.resolve(strict=True)
+    summary = args.summary.resolve(strict=True)
+    output = args.output.resolve()
+
+    if not source.is_file() or source.suffix.lower() not in {".mp4", ".wav"}:
+        raise SystemExit(f"source must be an existing MP4 or WAV file: {source}")
+    if transcript.suffix.lower() != ".json":
+        raise SystemExit(f"transcript must use the .json extension: {transcript}")
+    if summary.suffix.lower() != ".md":
+        raise SystemExit(f"summary must use the .md extension: {summary}")
+    if output.suffix.lower() != ".md":
+        raise SystemExit(f"output must use the .md extension: {output}")
+    if transcript.parent != source.parent or output.parent != source.parent:
+        raise SystemExit("transcript JSON and Markdown must be beside the source media")
+    if output.exists():
+        raise SystemExit(f"refusing to overwrite existing output: {output}")
+
+    duration, segments, diagnostics = load_transcript(transcript)
+    summary_body = summary.read_text(encoding="utf-8").strip()
+    if not summary_body:
+        raise SystemExit("summary Markdown must not be empty")
+    markdown = render_markdown(source, duration, segments, summary_body)
+    with output.open("x", encoding="utf-8") as stream:
+        stream.write(markdown)
+
+    print(
+        json.dumps(
+            {
+                "out_path": str(output),
+                "duration": duration,
+                "segments": len(segments),
+                "diagnostics": diagnostics,
+            },
+            ensure_ascii=False,
+        )
+    )
+
+
+if __name__ == "__main__":
+    main()
