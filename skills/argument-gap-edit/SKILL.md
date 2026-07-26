@@ -1,45 +1,46 @@
 ---
 name: argument-gap-edit
-description: 書籍や長文原稿で、無理筋な議論、段落間に埋めがたいギャップ、理論や引用の見せびらかし、段落単位の割り込みを検出し、論理単位ごとに再配置・削除・橋渡しする編集を行う。原稿の議論の筋を点検して直すとき、または原稿の一部で確立した編集方針を別の箇所へ適用するときに使用する。文体・整形の規範だけが必要なら japanese-tech-writing を使う。
+description: Edit books and long-form manuscripts by detecting forced arguments, unbridgeable paragraph gaps, performative theory or quotations, and paragraph-level interruptions, then reorder, remove, or bridge material by logical unit. Use when checking and repairing a manuscript's argumentative flow or applying an editorial approach established in one section to another. Use japanese-writing when only prose style and formatting rules are needed.
 ---
 
 # Argument Gap Edit
 
-このスキルは、文章を「より自然」にするためではなく、論証の筋が本当に通っているかを点検して直すために使う。
-差分の局所修正ではなく、段落が前後の論理に対して果たす役割を見る。
+Use this skill to test whether an argument actually holds together, not merely to make prose sound more natural.
+Evaluate the role each paragraph plays in the surrounding logic instead of limiting edits to local wording.
 
-## 併用する規範
+## Companion Standard
 
-作業前に `japanese-tech-writing` スキルを読む。
-特に「段落と論証の構成」「論証の厳密さ」「冗長の排除」に従う。
+Read the `japanese-writing` skill before editing Japanese prose.
+Pay particular attention to its embedded rules for paragraph structure, argumentative rigor, and removing redundancy.
 
-## 検出する問題
+## Problems to Detect
 
-- **話題の飛び込み**：前段落で導入していない語・問い・抽象語を、次段落の冒頭で主語にする。
-- **言い換えによる逃げ**：本文の中心語を、似た別語にすり替えて接続を作ったように見せる。
-  例：「見抜く」を「見分ける」に逃がす。
-- **理論の見せびらかし**：引用・定式化・数学用語を出しているが、その後の判断や次段落の主張を変えていない。
-- **証拠の型違い**：支えたい主張と、持ち出した例・研究・概念が別の問いに答えている。
-- **A-B-A の割り込み**：同じ対象について述べている途中に別の話を挟み、その後で元の対象へ戻る。
-- **術語の先出し**：本文の具体的な関係を説明する前に、術語を立てて理解したことにする。
-- **コラムの空転**：コラムが本文の作業判断を前に進めず、知識紹介だけで終わっている。
+- **Topic intrusion**: A paragraph opens with a term, question, or abstraction that the preceding paragraph did not introduce.
+- **Escape by paraphrase**: The manuscript substitutes a similar word for a central term and presents the substitution as a logical connection.
+  Example: replacing "detect" with "distinguish" without explaining the change.
+- **Performative theory**: A quotation, formalization, or mathematical term appears but changes neither the subsequent judgment nor the next paragraph's claim.
+- **Evidence type mismatch**: The example, study, or concept answers a different question from the claim it is meant to support.
+- **A-B-A interruption**: The manuscript interrupts a discussion of one subject with another topic and later returns to the original subject.
+- **Premature terminology**: A technical term appears before the manuscript explains the concrete relationship that the term is meant to name.
+- **Detached sidebar**: A sidebar presents knowledge but does not advance any judgment the reader must make in the main text.
 
-## 点検手順
+## Review Procedure
 
-1. 対象範囲を段落単位に分ける。
-2. 各段落について、次の三つを一文で書き出す。
-   - 前段落から何を受けているか
-   - その段落が本文で果たす役割
-   - 次段落へ何を渡しているか
-3. この三つのどれかが書けない段落を、ギャップ候補にする。
-4. ギャップ候補について、上の「検出する問題」のどれに当たるかを判定する。
-5. 修正は、段落の中身だけでなく、段落の順序・削除・コラム化・本文への戻しを含めて考える。
+1. Divide the target passage into paragraphs.
+2. For each paragraph, state these three points in one sentence each:
+   - What it receives from the preceding paragraph
+   - What role it performs in the argument
+   - What it passes to the next paragraph
+3. Mark a paragraph as a gap candidate when any of the three points cannot be stated.
+4. Classify every candidate using the problem types above.
+5. Consider paragraph order, deletion, conversion to or from a sidebar, and bridging, not only edits within the paragraph.
 
-## 修正方針
+## Revision Rules
 
-- 段落冒頭は、前段落の語・問い・未解決事項を受ける。
-- 新しい理論や引用は、それが次の主張を変える場合だけ残す。
-- 具体例で言えることは、まず具体的な関係として書く。術語は後から置く。
-- 同じ対象について述べる文は連続させる。別の根拠や研究は、その対象の説明が閉じたあとに置く。
-- コラムは、読者が次に何を判断できるようになるかを書けないなら削るか、作業上の問いに変える。
-- 修正後、段落ごとに「受けるもの」「果たす役割」「渡すもの」を再確認する。
+- Open each paragraph by taking up a term, question, or unresolved issue from the preceding paragraph.
+- Keep a new theory or quotation only when it changes the next claim.
+- State what a concrete example establishes as a concrete relationship before naming it with a technical term.
+- Keep sentences about the same subject together.
+  Place separate evidence or research only after the current subject's explanation is complete.
+- Remove a sidebar or turn it into an operational question when it does not change what the reader can judge next.
+- After revising, recheck what every paragraph receives, performs, and passes forward.

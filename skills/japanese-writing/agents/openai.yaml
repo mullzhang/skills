@@ -1,0 +1,4 @@
+interface:
+  display_name: "Japanese Writing"
+  short_description: "Write natural Japanese without unnecessary English"
+  default_prompt: "Use $japanese-writing to rewrite this text as clear, natural Japanese without unnecessary English."
