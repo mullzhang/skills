@@ -94,40 +94,40 @@ def _make_rules() -> list[PatternRule]:
             severity="high",
             category="model_export",
             regex=re.compile(r"Variable names too long for Lp format", re.IGNORECASE),
-            diagnosis="LP形式の変数名長制約に抵触してモデル出力が失敗している。",
-            action="LPではなくMPSを優先保存し、LP保存時は短い変数名へ正規化する。",
+            diagnosis="Model export failed because variable names exceed the LP format limit.",
+            action="Prefer MPS output, and normalize variable names before writing LP files.",
         ),
         PatternRule(
             rule_id="solver_binary_not_found",
             severity="high",
             category="execution",
             regex=re.compile(r"(No executable found|cannot execute|not available|PulpSolverError)", re.IGNORECASE),
-            diagnosis="ソルバー実行バイナリまたは呼び出し設定に問題がある。",
-            action="solver path、環境変数、インストール状態、実行権限を確認する。",
+            diagnosis="The solver executable or invocation configuration is invalid.",
+            action="Check the solver path, environment, installation, and execute permissions.",
         ),
         PatternRule(
             rule_id="memory_issue",
             severity="high",
             category="resource",
             regex=re.compile(r"(out of memory|std::bad_alloc|memory error)", re.IGNORECASE),
-            diagnosis="メモリ不足で探索が継続できない。",
-            action="モデル縮約、不要変数削減、time limit調整、計算資源増強を検討する。",
+            diagnosis="The search cannot continue because available memory is exhausted.",
+            action="Reduce the model, remove unnecessary variables, adjust the time limit, or add compute resources.",
         ),
         PatternRule(
             rule_id="numerical_instability",
             severity="medium",
             category="numerical",
             regex=re.compile(r"(numerical|scaling|singular|ill[- ]conditioned|primal infeasible due to tolerance)", re.IGNORECASE),
-            diagnosis="数値スケーリング不良または係数レンジ過大の兆候がある。",
-            action="係数の桁レンジを縮小し、Big-Mを見直し、単位系を正規化する。",
+            diagnosis="The log indicates poor numerical scaling or an excessive coefficient range.",
+            action="Reduce the coefficient range, review Big-M values, and normalize units.",
         ),
         PatternRule(
             rule_id="infeasible_status",
             severity="high",
             category="feasibility",
             regex=re.compile(r"\b(infeasible|no feasible solution)\b", re.IGNORECASE),
-            diagnosis="制約系が同時充足できず実行不能になっている可能性が高い。",
-            action="LP/MPSを保存し、制約の衝突候補を絞り、IIS解析可能なソルバーで検証する。",
+            diagnosis="The constraint system is likely infeasible because its constraints cannot be satisfied together.",
+            action="Save LP or MPS, narrow the conflicting constraints, and verify them with an IIS-capable solver.",
             exclude_regexes=(
                 re.compile(r"primal infeasible due to tolerance", re.IGNORECASE),
             ),
@@ -137,8 +137,8 @@ def _make_rules() -> list[PatternRule]:
             severity="high",
             category="modeling",
             regex=re.compile(r"\b(unbounded|dual infeasible)\b", re.IGNORECASE),
-            diagnosis="目的方向に下限/上限が欠落している可能性がある。",
-            action="目的に関与する変数の境界条件と符号を点検する。",
+            diagnosis="A required lower or upper bound may be missing in the objective direction.",
+            action="Inspect bounds and signs for variables that contribute to the objective.",
             exclude_regexes=(
                 re.compile(r"=>\s*unbounded\b", re.IGNORECASE),  # HiGHS legend line
             ),
@@ -148,8 +148,8 @@ def _make_rules() -> list[PatternRule]:
             severity="medium",
             category="performance",
             regex=re.compile(r"\b(time limit|stopped on time|timelimit)\b", re.IGNORECASE),
-            diagnosis="制限時間到達により最適化が途中停止している。",
-            action="gap目標、探索パラメータ、Big-M、対称性、初期解の品質を見直す。",
+            diagnosis="Optimization stopped before completion after reaching the time limit.",
+            action="Review the gap target, search parameters, Big-M values, symmetry, and initial-solution quality.",
         ),
     ]
 
@@ -339,37 +339,37 @@ def _collect_diagnosis(status: str, findings: list[Evidence]) -> tuple[list[str]
     by_rule = {f.rule_id for f in findings}
 
     if "solver_binary_not_found" in by_rule:
-        diagnosis.append("ソルバー実行環境の不整合があり、モデルの正否以前に実行基盤で失敗している。")
-        actions.append("ソルバー起動コマンドを単体実行し、PATHとバージョン整合を確認する。")
+        diagnosis.append("The solver runtime is misconfigured, so execution fails before model validity can be assessed.")
+        actions.append("Run the solver command directly and verify PATH and version compatibility.")
 
     if "lp_variable_name_too_long" in by_rule:
-        diagnosis.append("LP出力処理で変数名長制約により失敗している。")
-        actions.append("`writeMPS(..., rename=1)`を優先し、LPは短縮名のデバッグ用途に限定する。")
+        diagnosis.append("LP export fails because variable names exceed the format limit.")
+        actions.append("Prefer `writeMPS(..., rename=1)` and reserve LP output with shortened names for debugging.")
 
     if status == "infeasible":
-        diagnosis.append("制約の組み合わせに矛盾がある可能性が高い。")
-        actions.append("必須制約を段階的に有効化して最小矛盾集合に近づける。")
-        actions.append("可能ならMPSを外部ソルバーでIIS解析し、衝突制約を特定する。")
+        diagnosis.append("The constraint set is likely contradictory.")
+        actions.append("Enable required constraints incrementally to approach a minimal conflicting set.")
+        actions.append("When possible, run IIS analysis on the MPS with an external solver to identify conflicts.")
 
     if status == "unbounded":
-        diagnosis.append("目的関数を改善し続けられるため、境界設定または符号に欠陥がある。")
-        actions.append("目的に寄与する変数の上下限とフロー保存制約の欠落を点検する。")
+        diagnosis.append("The objective can improve indefinitely, indicating a defective bound or sign.")
+        actions.append("Inspect bounds on objective variables and check for missing flow-conservation constraints.")
 
     if status == "time_limit":
-        diagnosis.append("探索空間が広く、現行パラメータでは収束前に打ち切られている。")
-        actions.append("Big-Mの縮小、対称性削減、初期解投入、ギャップ許容値設定を優先する。")
+        diagnosis.append("The search space is too broad to converge under the current parameters before termination.")
+        actions.append("Prioritize smaller Big-M values, symmetry reduction, a starting solution, and a gap tolerance.")
 
     if "numerical_instability" in by_rule:
-        diagnosis.append("数値不安定により求解品質と速度が悪化している可能性がある。")
-        actions.append("係数レンジを2-3桁程度に正規化し、過大係数の制約を分解する。")
+        diagnosis.append("Numerical instability may be degrading solution quality and speed.")
+        actions.append("Normalize coefficients to a range of two or three orders of magnitude and split constraints with excessive coefficients.")
 
     if "memory_issue" in by_rule:
-        diagnosis.append("モデル規模または探索戦略に対してメモリが不足している。")
-        actions.append("変数削減、事前固定、タスク分割で問題規模を小さくする。")
+        diagnosis.append("Available memory is insufficient for the model size or search strategy.")
+        actions.append("Reduce the problem with fewer variables, presolve fixing, or task decomposition.")
 
     if not diagnosis:
-        diagnosis.append("致命的エラーは検出されなかったが、追加ログが不足している可能性がある。")
-        actions.append("solverの詳細ログを有効化し、LP/MPS/JSONを同時保存して再試行する。")
+        diagnosis.append("No fatal error was detected, but the available log may be insufficient.")
+        actions.append("Enable detailed solver logging, save LP, MPS, and JSON together, and retry.")
 
     dedup_actions: list[str] = []
     seen: set[str] = set()
@@ -426,17 +426,17 @@ def _build_iis_plan(status: str, lp_path: Path | None, mps_path: Path | None) ->
     plan = IISPlan()
 
     if status != "infeasible":
-        plan.reason = "statusがinfeasibleではないため、IIS解析は不要。"
+        plan.reason = "IIS analysis is unnecessary because the status is not infeasible."
         return plan
 
     artifact_path = mps_path or lp_path
     if artifact_path is None:
         plan.applicability = "blocked"
-        plan.reason = "IIS解析に必要なLP/MPSが未指定。"
+        plan.reason = "No LP or MPS artifact was provided for IIS analysis."
         plan.fallback_actions = [
-            "LPまたはMPSを必ず保存して同一runディレクトリへ配置する。",
-            "制約を段階的に有効化して、最小矛盾集合に近い条件を特定する。",
-            "ハード制約にslack変数を追加してペナルティ最小化し、違反制約候補を抽出する。",
+            "Save an LP or MPS artifact in the same run directory.",
+            "Enable constraints incrementally to approach a minimal conflicting set.",
+            "Add slack variables to hard constraints, minimize violation penalties, and identify likely conflicting constraints.",
         ]
         return plan
 
@@ -447,7 +447,7 @@ def _build_iis_plan(status: str, lp_path: Path | None, mps_path: Path | None) ->
     run_iis_script_q = shlex.quote(str(run_iis_script))
 
     plan.applicability = "recommended"
-    plan.reason = "infeasibleが確定しており、IISで衝突制約を局所化できる可能性が高い。"
+    plan.reason = "The model is confirmed infeasible, and IIS analysis can likely localize conflicting constraints."
     plan.artifact_for_iis = artifact
     plan.detected_iis_solvers = _detect_iis_solvers()
 
@@ -491,7 +491,7 @@ def _build_iis_plan(status: str, lp_path: Path | None, mps_path: Path | None) ->
                 highs_cmd,
             ]
         )
-        plan.expected_outputs.append(f"{artifact_path.with_suffix('.iis.lp')} (HiGHSでIIS抽出時)")
+        plan.expected_outputs.append(f"{artifact_path.with_suffix('.iis.lp')} (IIS extracted with HiGHS)")
 
     if "gurobi" in plan.detected_iis_solvers:
         plan.commands.extend(
@@ -500,7 +500,7 @@ def _build_iis_plan(status: str, lp_path: Path | None, mps_path: Path | None) ->
                 gurobi_cmd,
             ]
         )
-        plan.expected_outputs.append(f"{artifact_path.with_suffix('.iis.ilp')} (GurobiでIIS抽出時)")
+        plan.expected_outputs.append(f"{artifact_path.with_suffix('.iis.ilp')} (IIS extracted with Gurobi)")
 
     if "cplex" in plan.detected_iis_solvers:
         plan.commands.extend(
@@ -509,13 +509,13 @@ def _build_iis_plan(status: str, lp_path: Path | None, mps_path: Path | None) ->
                 cplex_cmd,
             ]
         )
-        plan.expected_outputs.append(f"{artifact_path.with_suffix('')}.conflict.clp (CPLEX conflict refiner時)")
+        plan.expected_outputs.append(f"{artifact_path.with_suffix('')}.conflict.clp (CPLEX conflict refiner output)")
 
-    plan.expected_outputs.append("IISに含まれる制約名リスト（業務制約への逆引き用）")
+    plan.expected_outputs.append("Constraint names in the IIS, for mapping back to domain constraints")
     plan.fallback_actions = [
-        "IISソルバーが無い場合は、制約をブロック単位で段階有効化して矛盾発生点を特定する。",
-        "同じrunの feasible ケースとの差分で constraints_active を比較し、追加・厳格化制約を優先調査する。",
-        "slack付き実行可能化モデル（違反ペナルティ最小化）で上位違反制約を抽出する。",
+        "Without an IIS-capable solver, enable constraint blocks incrementally to locate where infeasibility appears.",
+        "Compare constraints_active against a feasible case from the same run and prioritize added or tightened constraints.",
+        "Use a feasibility-relaxation model with slack penalties to identify the largest constraint violations.",
     ]
     return plan
 

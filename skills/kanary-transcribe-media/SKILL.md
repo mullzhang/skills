@@ -55,7 +55,7 @@ Use `assets/sample.wav` for a smoke test and `assets/sample.transcript.md` as th
    - both outputs are regular files in the source directory
    - JSON contains numeric `duration` and a `transcript.segments` array
    - the Markdown renderer reports the same segment count as the JSON
-   - Markdown contains a non-empty `## 要約` before `## 文字起こし`
+   - Markdown contains a non-empty `## Summary` before `## Transcript`
    - when the JSON has segments, Markdown contains its first and last timestamped segments
 10. Remove only the task-specific temporary directory. Keep both sibling outputs.
 11. Report the Markdown path, JSON path, duration, segment count, diagnostic count, and that the source media was not modified.
