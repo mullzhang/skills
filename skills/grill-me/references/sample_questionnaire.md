@@ -1,163 +1,117 @@
-# 検索UI改善計画 grill-me 質問票サンプル
+# Search UI Improvement Plan: Grill-Me Questionnaire Sample
 
-## 概要
+## Overview
 
-- **目的:** 検索UI改善計画の前提・リスク・意思決定依存関係を深掘りし、実装前に曖昧さを減らす。
-- **ファイル運用:** この1ファイルに全ラウンドを追記する。過去ラウンドの回答は上書きしない。
-- **回答方法:** `回答:` に番号または文章を記入してください。迷う場合は推奨案の番号で構いません。
-
----
-
-## ラウンド1: 初期仮説の確認
-
-- **このラウンドの目的:** 施策の狙い、対象ユーザー、成功条件、スコープの前提を確認する。
-- **前ラウンドからの接続:** 初回のためなし。
-- **質問数:** 5問
-
-### R1-Q1: 成功指標
-
-この検索UI改善で最も重視する成果は何ですか？
-
-1. 検索後の目的ページ到達率を上げる（推奨度: ★ | UI改善の価値が行動指標で測りやすい）
-2. 検索結果クリック率を上げる（推奨度: ○ | 改善検知はしやすいが、クリック後の満足度は別途見る必要がある）
-3. 検索0件率を下げる（推奨度: ○ | 辞書・同義語対応も絡むためUIだけでは完結しにくい）
-4. AIに任せる / 推奨案で進める
-
-回答: 1
-
-理由/補足（任意）: 最終的にはユーザーが目的ページにたどり着けるかを見たい。
+- **Purpose:** Expose assumptions, risks, and decision dependencies before implementing a search UI improvement.
+- **File workflow:** Append every round to this file. Never overwrite answers from earlier rounds.
+- **How to answer:** Enter a number or free-text answer after `Answer:`. If unsure, choose the recommended option.
 
 ---
 
-### R1-Q2: 対象ユーザー
+## Round 1: Test Initial Assumptions
 
-最初に最適化するユーザー層はどれですか？
+- **Round purpose:** Establish the target outcome, initial audience, and permitted scope.
+- **Connection from the previous round:** None; this is the first round.
+- **Questions:** 3
 
-1. 初回・ライトユーザー（推奨度: ★ | 検索UIの分かりやすさが最も効きやすい）
-2. 既存の高頻度ユーザー（推奨度: ○ | 効率改善は狙えるが、既存操作の変更リスクがある）
-3. 管理者・社内オペレーター（推奨度: △ | 業務効率には効くが、一般ユーザー向けUIとは別設計になりやすい）
-4. AIに任せる / 推奨案で進める
+### R1-Q1: Success Metric
 
-回答: 1
+Which outcome matters most?
 
-理由/補足（任意）: 初回ユーザーの離脱が多いという仮説がある。
+1. Increase the rate at which searchers reach their intended page (Recommended | Measures whether search produces a useful outcome)
+2. Increase search-result click-through rate (Alternative | Easy to measure but does not prove post-click satisfaction)
+3. Reduce the zero-results rate (Alternative | Useful but may require changes beyond the UI)
+4. Let the agent decide / Use the recommendation
 
----
+Answer: 1
 
-### R1-Q3: 変更範囲
-
-今回の改善で触ってよい範囲はどこまでですか？
-
-1. 検索入力欄・候補表示・結果一覧のUIまで（推奨度: ★ | UI改善として効果と実装範囲のバランスが良い）
-2. 検索ロジックやランキングも含める（推奨度: ○ | 効果は大きいが検証とリリースリスクが増える）
-3. 結果詳細ページや導線全体も含める（推奨度: △ | 成果には効くがスコープが広がりやすい）
-4. AIに任せる / 推奨案で進める
-
-回答: 2
-
-理由/補足（任意）: UIだけでなく、ランキングの悪さも問題かもしれない。
+Rationale / Notes (optional): The final outcome should be whether users reach the page they need.
 
 ---
 
-### R1-Q4: リリース戦略
+### R1-Q2: Initial Audience
 
-変更はどのようにリリースしますか？
+Which users should the first release optimize for?
 
-1. A/Bテストで段階展開する（推奨度: ★ | 指標変化を比較しやすく、失敗時に戻しやすい）
-2. 全ユーザーへ一括リリースする（推奨度: △ | 速いが、悪化時の影響が大きい）
-3. 社内・一部ユーザーで先行検証する（推奨度: ○ | 定性確認には良いが、量的な効果検証は弱い）
-4. AIに任せる / 推奨案で進める
+1. New and occasional users (Recommended | They benefit most from clearer search behavior)
+2. Existing frequent users (Alternative | Efficiency gains are possible, but workflow changes may be disruptive)
+3. Administrators and internal operators (Alternative | Valuable for operations but likely requires a separate design)
+4. Let the agent decide / Use the recommendation
 
-回答: 1
+Answer: 1
 
-理由/補足（任意）:
-
----
-
-### R1-Q5: 失敗条件
-
-この改善を「失敗」と判断する条件は何ですか？
-
-1. 目的ページ到達率が改善せず、検索0件率または離脱率が悪化する（推奨度: ★ | 成功指標と副作用の両方を見られる）
-2. ユーザーから否定的なフィードバックが一定数出る（推奨度: ○ | 重要だが定量基準が曖昧になりやすい）
-3. 実装コストが見積もりを超える（推奨度: △ | プロジェクト管理上は重要だがユーザー価値とは別軸）
-4. AIに任せる / 推奨案で進める
-
-回答: 4
-
-理由/補足（任意）:
+Rationale / Notes (optional): We suspect first-time users abandon search frequently.
 
 ---
 
-## ラウンド2: スコープ矛盾と検証設計の深掘り
+### R1-Q3: Change Scope
 
-- **このラウンドの目的:** Round 1 の回答で見えた「UI改善」と「検索ロジック変更」のスコープ混在を整理し、A/Bテストで何を検証するかを確定する。
-- **前ラウンドからの接続:** R1-Q1 で目的ページ到達率を重視し、R1-Q3 でランキング変更も含めたいと回答したため、UI変更と検索品質変更を同時に入れると効果要因が分離できない。
-- **質問数:** 4問
+What may this effort change?
 
-### 深掘り経路
+1. Search input, suggestions, and results UI only (Recommended | Keeps the experiment attributable to UI changes)
+2. UI plus ranking logic (Alternative | May deliver more value but mixes two causes)
+3. The entire path through result-detail pages (Alternative | Broader impact but likely to expand scope)
+4. Let the agent decide / Use the recommendation
 
-| 起点 | 残った論点 | 今回の質問 |
+Answer: 2
+
+Rationale / Notes (optional): Poor ranking may be part of the problem.
+
+---
+
+## Round 2: Separate Scope and Experiment Effects
+
+- **Round purpose:** Resolve the conflict between a UI-focused project and the desire to change ranking.
+- **Connection from the previous round:** R1-Q1 selected destination-page reach as the outcome, while R1-Q3 included ranking changes. Combining both prevents attribution.
+- **Questions:** 3
+
+### Question Path
+
+| Starting point | Unresolved issue | Current question |
 | --- | --- | --- |
-| R1-Q1 | 目的ページ到達率を上げたいが、どの変更が効いたかを分けて測る必要がある | R2-Q1 |
-| R1-Q3 | UI変更とランキング変更が同一スコープに入っている | R2-Q1, R2-Q2 |
-| R1-Q4 | A/Bテストを選んだが、実験単位が未定 | R2-Q3 |
-| R1-Q5 | 失敗条件をAIに任せたため、停止基準が未確定 | R2-Q4 |
+| R1-Q1 | The outcome depends on UI and ranking quality | R2-Q1 |
+| R1-Q3 | UI and ranking changes share one scope | R2-Q1, R2-Q2 |
+| R1-Q3 | No stopping rule exists | R2-Q3 |
 
-### R2-Q1: 検証単位
+### R2-Q1: Experiment Unit
 
-UI変更とランキング変更は、同じ実験に入れますか？
+Should UI and ranking changes be tested together?
 
-1. 別々の実験に分ける（推奨度: ★ | 効果要因を分離でき、次の判断に使いやすい）
-2. 最初から同時に入れる（推奨度: △ | 速いが、改善または悪化の原因が分かりにくい）
-3. UI変更だけ先に試し、ランキング変更は保留する（推奨度: ○ | UI改善としては堅いが、根本原因がランキングなら効果が限定される）
-4. AIに任せる / 推奨案で進める
+1. Test them separately (Recommended | Preserves causal attribution and supports the next decision)
+2. Test them together from the start (Alternative | Faster but obscures the cause of improvement or regression)
+3. Test UI first and defer ranking (Alternative | Lower risk, but limited if ranking is the root problem)
+4. Let the agent decide / Use the recommendation
 
-回答:
+Answer:
 
-理由/補足（任意）:
-
----
-
-### R2-Q2: ランキング変更の扱い
-
-ランキング変更を含める場合、どの程度まで許容しますか？
-
-1. 軽微な重み調整のみ（推奨度: ★ | リスクを抑えながら検索品質の仮説を検証できる）
-2. 新しいランキングモデルへ切り替える（推奨度: △ | 効果は大きいが、検証・説明・ロールバックの負荷が高い）
-3. 同義語・表記ゆれ補正だけに限定する（推奨度: ○ | 0件率には効きやすいが、順位品質の問題は残る）
-4. AIに任せる / 推奨案で進める
-
-回答:
-
-理由/補足（任意）:
+Rationale / Notes (optional):
 
 ---
 
-### R2-Q3: A/Bテストの主要比較
+### R2-Q2: Ranking Change Limit
 
-最初のA/Bテストでは何を比較しますか？
+How much ranking change is acceptable in this effort?
 
-1. 現行UI vs 新UIのみ（推奨度: ★ | UI改善の効果を明確に測れる）
-2. 現行検索全体 vs 新UI + 新ランキング（推奨度: △ | ユーザー価値は測れるが原因分解ができない）
-3. 3群以上で UI とランキングを分解する（推奨度: ○ | 情報量は多いが、必要トラフィックと分析負荷が増える）
-4. AIに任せる / 推奨案で進める
+1. Minor weight adjustments only (Recommended | Tests the ranking hypothesis with limited risk)
+2. Replace the ranking model (Alternative | Larger upside but much higher validation and rollback cost)
+3. Limit changes to synonyms and spelling normalization (Alternative | Helps zero-result searches but not ranking quality)
+4. Let the agent decide / Use the recommendation
 
-回答:
+Answer:
 
-理由/補足（任意）:
+Rationale / Notes (optional):
 
 ---
 
-### R2-Q4: 停止基準
+### R2-Q3: Stopping Rule
 
-どの条件を満たしたら実験を止めますか？
+When should the experiment stop?
 
-1. 目的ページ到達率が改善せず、検索後離脱率が悪化した場合（推奨度: ★ | 成功指標と副作用を同時に見られる）
-2. 検索結果クリック率が下がった場合（推奨度: ○ | 早期検知しやすいが、クリック減が必ずしも悪化とは限らない）
-3. 問い合わせ・苦情が一定数を超えた場合（推奨度: ○ | 実害を拾えるが、閾値の事前定義が必要）
-4. AIに任せる / 推奨案で進める
+1. Intended-page reach fails to improve while post-search abandonment worsens (Recommended | Covers both the primary outcome and a harmful side effect)
+2. Search-result click-through rate decreases (Alternative | Detects change quickly but may misclassify fewer, better clicks)
+3. Support complaints cross a defined threshold (Alternative | Captures harm but needs a threshold in advance)
+4. Let the agent decide / Use the recommendation
 
-回答:
+Answer:
 
-理由/補足（任意）:
+Rationale / Notes (optional):

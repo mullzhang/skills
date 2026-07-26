@@ -55,6 +55,6 @@ Treat Fable as the execution environment for the prompt, not as the subject or d
 Respond exactly in this shape:
 
 ```text
-Fable向けプロンプト案
+Fable Prompt Draft
 [final prompt]
 ```

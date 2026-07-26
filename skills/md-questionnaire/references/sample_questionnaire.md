@@ -1,99 +1,99 @@
-# 目標達成エフェクト 質問票サンプル
+# Goal Completion Effect Questionnaire Sample
 
-## 概要
+## Overview
 
-- **目的:** 目標達成時の祝福エフェクト仕様を、短時間で決められる形にする。
-- **質問数:** 6問
-- **回答方法:** `回答:` に番号または文章を記入してください。迷う場合は推奨案の番号で構いません。
-
----
-
-## 質問1: エフェクトの種類
-
-目標達成時にどのようなエフェクトを表示しますか？
-
-1. 紙吹雪（推奨度: ★ | 派手さと親しみやすさのバランスが良く、実装ライブラリも豊富）
-2. キラキラ・星が散る（推奨度: ○ | 上品だが派手さはやや控えめ）
-3. 花火（推奨度: ○ | 印象は強いが、モバイルでは負荷に注意）
-4. 複数組み合わせ（推奨度: △ | 表現力は高いが実装と調整が複雑）
-5. エフェクトなし
-6. AIに任せる / 推奨案で進める
-
-回答:
-
-理由/補足（任意）:
+- **Purpose:** Decide the goal-completion celebration effect quickly and explicitly.
+- **Questions:** 6
+- **How to answer:** Enter a number or free-text answer after `Answer:`. If unsure, choose the recommended option.
 
 ---
 
-## 質問2: 表示タイミング
+## Question 1: Effect Type
 
-エフェクトはいつ表示しますか？
+What effect should appear when a goal is completed?
 
-1. 達成した瞬間のみ、1回だけ（推奨度: ★ | ユーザー体験として自然で、鬱陶しさが少ない）
-2. 達成後のモーダル表示中ずっと（推奨度: ○ | 祝福感は強いが、やや過剰になりやすい）
-3. 達成後、画面を開くたび毎回（推奨度: △ | 達成感は残るが、反復表示で負担になりやすい）
-4. AIに任せる / 推奨案で進める
+1. Confetti (Recommended | Balances visibility and familiarity, with strong library support)
+2. Sparkles or scattered stars (Alternative | Refined but less noticeable)
+3. Fireworks (Alternative | Memorable but potentially expensive on mobile)
+4. Combine several effects (Alternative | Expressive but harder to implement and tune)
+5. No effect
+6. Let the agent decide / Use the recommendation
 
-回答:
+Answer:
 
-理由/補足（任意）:
-
----
-
-## 質問3: 表示時間
-
-エフェクトは何秒程度表示しますか？
-
-1. 2-3秒（推奨度: ★ | 祝福として十分で、操作の邪魔になりにくい）
-2. 1秒未満（推奨度: ○ | 軽いが、達成感は弱め）
-3. 4-6秒（推奨度: △ | 印象は強いが、テンポを損ねる可能性がある）
-4. AIに任せる / 推奨案で進める
-
-回答:
-
-理由/補足（任意）:
+Rationale / Notes (optional):
 
 ---
 
-## 質問4: 表示範囲
+## Question 2: Display Timing
 
-エフェクトは画面のどの範囲に表示しますか？
+When should the effect appear?
 
-1. 画面全体（推奨度: ★ | 達成の瞬間が視覚的に伝わりやすい）
-2. モーダル周辺のみ（推奨度: ○ | 控えめで、UIを邪魔しにくい）
-3. 達成ボタン周辺のみ（推奨度: △ | 実装は軽いが、達成感は弱い）
-4. AIに任せる / 推奨案で進める
+1. Once, at the moment of completion (Recommended | Feels natural and avoids repetition)
+2. Throughout the post-completion modal (Alternative | More celebratory but easily excessive)
+3. Every time the screen opens after completion (Alternative | Preserves the achievement but becomes repetitive)
+4. Let the agent decide / Use the recommendation
 
-回答:
+Answer:
 
-理由/補足（任意）:
-
----
-
-## 質問5: モバイル対応
-
-スマートフォンではどのように扱いますか？
-
-1. PCと同じ体験にするが、粒子数を減らす（推奨度: ★ | 一貫性と性能のバランスが良い）
-2. PCのみ表示し、モバイルでは表示しない（推奨度: △ | 実装は楽だが体験差が出る）
-3. モバイル専用の軽量エフェクトにする（推奨度: ○ | 品質は高いが調整コストが増える）
-4. AIに任せる / 推奨案で進める
-
-回答:
-
-理由/補足（任意）:
+Rationale / Notes (optional):
 
 ---
 
-## 質問6: アクセシビリティ
+## Question 3: Duration
 
-動きが苦手なユーザーへの配慮はどうしますか？
+How long should the effect remain visible?
 
-1. OSの `prefers-reduced-motion` に従って、動きを減らすか無効化する（推奨度: ★ | 標準的で負担が少ない）
-2. アプリ内にオン/オフ設定を追加する（推奨度: ○ | 明示的だが設定UIが増える）
-3. 今回は対応しない（推奨度: △ | 短期実装は楽だが、後で負債になりやすい）
-4. AIに任せる / 推奨案で進める
+1. Two to three seconds (Recommended | Long enough to register without blocking interaction)
+2. Less than one second (Alternative | Lightweight but less satisfying)
+3. Four to six seconds (Alternative | Stronger impression but may slow the flow)
+4. Let the agent decide / Use the recommendation
 
-回答:
+Answer:
 
-理由/補足（任意）:
+Rationale / Notes (optional):
+
+---
+
+## Question 4: Display Area
+
+How much of the screen should the effect cover?
+
+1. The full screen (Recommended | Makes the completion moment immediately visible)
+2. Only the area around the modal (Alternative | Restrained and less intrusive)
+3. Only the area around the completion button (Alternative | Cheaper to render but less celebratory)
+4. Let the agent decide / Use the recommendation
+
+Answer:
+
+Rationale / Notes (optional):
+
+---
+
+## Question 5: Mobile Behavior
+
+How should the effect behave on smartphones?
+
+1. Keep the same experience with fewer particles (Recommended | Balances consistency and performance)
+2. Show it only on desktop (Alternative | Simpler but creates an experience gap)
+3. Build a separate lightweight mobile effect (Alternative | Higher quality but increases tuning cost)
+4. Let the agent decide / Use the recommendation
+
+Answer:
+
+Rationale / Notes (optional):
+
+---
+
+## Question 6: Accessibility
+
+How should the effect accommodate users who are sensitive to motion?
+
+1. Respect `prefers-reduced-motion` and reduce or disable movement (Recommended | Standard and low burden)
+2. Add an in-app on/off setting (Alternative | Explicit but adds settings UI)
+3. Do not address it in this release (Alternative | Faster now but creates follow-up work)
+4. Let the agent decide / Use the recommendation
+
+Answer:
+
+Rationale / Notes (optional):
