@@ -1,0 +1,4 @@
+interface:
+  display_name: "Reference AI History"
+  short_description: "Search archived ChatGPT and SpecStory conversations"
+  default_prompt: "Use $ai-history-reference to find and cite the prior AI conversation that should inform this task."
