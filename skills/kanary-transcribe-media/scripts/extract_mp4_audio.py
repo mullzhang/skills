@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Extract a normalized WAV from an MP4 without modifying the source."""
+"""Extract a normalized WAV from MP4 or M4A media without modifying the source."""
 
 from __future__ import annotations
 
@@ -23,8 +23,8 @@ def main() -> None:
     source = args.source.resolve(strict=True)
     output = args.output.resolve()
 
-    if not source.is_file() or source.suffix.lower() != ".mp4":
-        raise SystemExit(f"source must be an existing MP4 file: {source}")
+    if not source.is_file() or source.suffix.lower() not in {".m4a", ".mp4"}:
+        raise SystemExit(f"source must be an existing MP4 or M4A file: {source}")
     if output.suffix.lower() != ".wav":
         raise SystemExit(f"output must use the .wav extension: {output}")
     if output.exists():

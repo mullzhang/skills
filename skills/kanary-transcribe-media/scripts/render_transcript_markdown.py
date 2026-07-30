@@ -104,16 +104,16 @@ def main() -> None:
     summary = args.summary.resolve(strict=True)
     output = args.output.resolve()
 
-    if not source.is_file() or source.suffix.lower() not in {".mp4", ".wav"}:
-        raise SystemExit(f"source must be an existing MP4 or WAV file: {source}")
+    if not source.is_file() or source.suffix.lower() not in {".m4a", ".mp4", ".wav"}:
+        raise SystemExit(f"source must be an existing MP4, M4A, or WAV file: {source}")
     if transcript.suffix.lower() != ".json":
         raise SystemExit(f"transcript must use the .json extension: {transcript}")
     if summary.suffix.lower() != ".md":
         raise SystemExit(f"summary must use the .md extension: {summary}")
     if output.suffix.lower() != ".md":
         raise SystemExit(f"output must use the .md extension: {output}")
-    if transcript.parent != source.parent or output.parent != source.parent:
-        raise SystemExit("transcript JSON and Markdown must be beside the source media")
+    if output.parent != source.parent:
+        raise SystemExit("Markdown must be beside the source media")
     if output.exists():
         raise SystemExit(f"refusing to overwrite existing output: {output}")
 
