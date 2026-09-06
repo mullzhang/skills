@@ -1,0 +1,4 @@
+interface:
+  display_name: "sudo Domain Modeling"
+  short_description: "業務からドメインモデル図と対応するオブジェクト図を作成・検証する"
+  default_prompt: "$sudo-domain-modeling を使って、対象業務のドメインモデル図と対応するオブジェクト図を作成し、draw-ioで保存してください。"

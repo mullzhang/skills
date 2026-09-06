@@ -1,0 +1,132 @@
+<mxfile host="65bd71144e">
+    <diagram id="domain" name="ドメインモデル図">
+        <mxGraphModel dx="1716" dy="947" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1280" pageHeight="960" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="d-title" value="図書貸出のドメインモデル図" style="whiteSpace=wrap;html=0;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;text;strokeColor=none;fillColor=none;align=left;fontSize=26;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="20" width="1100" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="d-scope" value="対象：貸出の登録と返却の記録 ／ 説明用に定義した架空の業務" style="whiteSpace=wrap;html=0;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;text;strokeColor=none;fillColor=none;align=left;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="70" width="1150" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="d-member-g" value="利用者集約" style="whiteSpace=wrap;html=0;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;swimlane;startSize=35;fontStyle=1;fillColor=#f5f5f5;strokeColor=#666666;collapsible=0;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="230" width="300" height="220" as="geometry"/>
+                </mxCell>
+                <mxCell id="d-member" value="&lt;b&gt;利用者 (Member)&lt;/b&gt;&lt;br&gt;［集約ルート］&lt;br&gt;利用者番号&lt;br&gt;氏名" style="whiteSpace=wrap;html=1;align=center;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;rounded=1;fillColor=#dae8fc;spacing=10;" parent="d-member-g" vertex="1">
+                    <mxGeometry x="30" y="55" width="240" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="d-loan-g" value="貸出集約" style="whiteSpace=wrap;html=0;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;swimlane;startSize=35;fontStyle=1;fillColor=#f5f5f5;strokeColor=#666666;collapsible=0;" parent="1" vertex="1">
+                    <mxGeometry x="510" y="180" width="310" height="490" as="geometry"/>
+                </mxCell>
+                <mxCell id="d-loan" value="&lt;b&gt;貸出 (Loan)&lt;/b&gt;&lt;br&gt;［集約ルート］&lt;br&gt;貸出番号&lt;br&gt;資料番号&lt;br&gt;貸出日&lt;br&gt;返却期限" style="whiteSpace=wrap;html=1;align=center;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;rounded=1;fillColor=#dae8fc;spacing=10;" parent="d-loan-g" vertex="1">
+                    <mxGeometry x="35" y="55" width="240" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="d-return" value="&lt;b&gt;返却記録 (ReturnRecord)&lt;/b&gt;&lt;br&gt;返却日" style="whiteSpace=wrap;html=1;align=center;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;rounded=1;fillColor=#dae8fc;spacing=10;" parent="d-loan-g" vertex="1">
+                    <mxGeometry x="35" y="330" width="240" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="d-member-loan" style="edgeStyle=entityRelationEdgeStyle;rounded=1;html=0;strokeColor=#44546A;startArrow=none;startFill=1;endArrow=none;exitX=1;exitY=.5;entryX=0;entryY=.5;" parent="1" source="d-member" target="d-loan" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="d-one" value="1" style="whiteSpace=wrap;html=0;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;text;strokeColor=none;fillColor=none;align=left;" parent="1" vertex="1">
+                    <mxGeometry x="365" y="290" width="35" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="d-many" value="0..*" style="whiteSpace=wrap;html=0;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;text;strokeColor=none;fillColor=none;align=left;" parent="1" vertex="1">
+                    <mxGeometry x="450" y="270" width="55" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="d-ref" value="借り手" style="whiteSpace=wrap;html=0;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;text;strokeColor=none;fillColor=none;align=left;" parent="1" vertex="1">
+                    <mxGeometry x="395" y="330" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="d-loan-return" style="edgeStyle=orthogonalEdgeStyle;curved=1;html=0;strokeColor=#44546A;startArrow=diamondThin;startFill=1;endArrow=none;exitX=.5;exitY=1;entryX=.5;entryY=0;" parent="1" source="d-loan" target="d-return" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="d-loan-one" value="1" style="whiteSpace=wrap;html=0;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;text;strokeColor=none;fillColor=none;align=left;" parent="1" vertex="1">
+                    <mxGeometry x="680" y="420" width="40" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="d-return-zero" value="0..1" style="whiteSpace=wrap;html=0;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;text;strokeColor=none;fillColor=none;align=left;" parent="1" vertex="1">
+                    <mxGeometry x="680" y="475" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="d-r1" value="［ルール R1］&#xa;貸出1件につき借り手は1人。&#xa;利用者には貸出がなくてもよい。" style="whiteSpace=wrap;html=0;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;rounded=0;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacing=12;" parent="1" vertex="1">
+                    <mxGeometry x="870" y="170" width="360" height="115" as="geometry"/>
+                </mxCell>
+                <mxCell id="d-r2" value="［ルール R2］&#xa;返却期限は貸出日以降。&#xa;貸出1件は資料1点を扱う。" style="whiteSpace=wrap;html=0;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;rounded=0;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacing=12;" parent="1" vertex="1">
+                    <mxGeometry x="870" y="320" width="360" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="d-r3" value="［ルール R3］&#xa;返却記録は貸出ごとに最大1件。&#xa;返却日は貸出日以降。&#xa;記録なし＝貸出中、あり＝返却済み。" style="whiteSpace=wrap;html=0;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;rounded=0;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacing=12;" parent="1" vertex="1">
+                    <mxGeometry x="870" y="475" width="360" height="145" as="geometry"/>
+                </mxCell>
+                <mxCell id="d-note2" style="edgeStyle=entityRelationEdgeStyle;rounded=1;html=0;strokeColor=#44546A;startArrow=none;startFill=1;endArrow=none;dashed=1;exitX=1;exitY=.5;entryX=0;entryY=.5;" parent="1" source="d-loan" target="d-r2" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="d-note3" style="edgeStyle=entityRelationEdgeStyle;rounded=1;html=0;strokeColor=#44546A;startArrow=none;startFill=1;endArrow=none;dashed=1;exitX=1;exitY=.5;entryX=0;entryY=.5;" parent="1" source="d-return" target="d-r3" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="d-assumption" value="［仮定］返却記録は貸出の一部として保持し、貸出単位で整合性を保つ。&#xa;資料は番号のみで識別する。資料台帳・予約・延滞料金・同時貸出の制御は対象外。" style="whiteSpace=wrap;html=0;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;rounded=0;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacing=12;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="710" width="1170" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="d-legend" value="実線：関連 ／ ◆：包含（貸出側） ／ 外枠：集約 ／ 破線：注記の対象" style="whiteSpace=wrap;html=0;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;text;strokeColor=none;fillColor=none;align=left;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="810" width="1170" height="60" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="objects" name="オブジェクト図">
+        <mxGraphModel dx="1201" dy="663" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1280" pageHeight="960" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="o-title" value="図書貸出のオブジェクト図" style="whiteSpace=wrap;html=0;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;text;strokeColor=none;fillColor=none;align=left;fontSize=26;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="20" width="1150" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="o-scope" value="名前・番号・日付はすべて架空。" style="whiteSpace=wrap;html=0;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;text;strokeColor=none;fillColor=none;align=left;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="75" width="1190" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="o-member-g" value="利用者集約：利用者A" style="whiteSpace=wrap;html=0;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;swimlane;startSize=35;fontStyle=1;fillColor=#f5f5f5;strokeColor=#666666;collapsible=0;" parent="1" vertex="1">
+                    <mxGeometry x="50" y="275" width="300" height="220" as="geometry"/>
+                </mxCell>
+                <mxCell id="o-member" value="&lt;b&gt;利用者A : 利用者 (Member)&lt;/b&gt;&lt;br&gt;［集約ルート］&lt;br&gt;利用者番号：M-001&lt;br&gt;氏名：山田 花子" style="whiteSpace=wrap;html=1;align=center;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;rounded=1;fillColor=#dae8fc;spacing=10;" parent="o-member-g" vertex="1">
+                    <mxGeometry x="25" y="55" width="250" height="135" as="geometry"/>
+                </mxCell>
+                <mxCell id="o-loan-a-g" value="貸出集約：貸出A（貸出中）" style="whiteSpace=wrap;html=0;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;swimlane;startSize=35;fontStyle=1;fillColor=#f5f5f5;strokeColor=#666666;collapsible=0;" parent="1" vertex="1">
+                    <mxGeometry x="500" y="145" width="320" height="240" as="geometry"/>
+                </mxCell>
+                <mxCell id="o-loan-a" value="&lt;b&gt;貸出A : 貸出 (Loan)&lt;/b&gt;&lt;br&gt;［集約ルート］&lt;br&gt;貸出番号：L-001&lt;br&gt;資料番号：B-101&lt;br&gt;貸出日：2026-09-01&lt;br&gt;返却期限：2026-09-15" style="whiteSpace=wrap;html=1;align=center;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;rounded=1;fillColor=#dae8fc;spacing=10;" parent="o-loan-a-g" vertex="1">
+                    <mxGeometry x="25" y="50" width="270" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="o-loan-b-g" value="貸出集約：貸出B（返却済み）" style="whiteSpace=wrap;html=0;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;swimlane;startSize=35;fontStyle=1;fillColor=#f5f5f5;strokeColor=#666666;collapsible=0;" parent="1" vertex="1">
+                    <mxGeometry x="500" y="420" width="320" height="410" as="geometry"/>
+                </mxCell>
+                <mxCell id="o-loan-b" value="&lt;b&gt;貸出B : 貸出 (Loan)&lt;/b&gt;&lt;br&gt;［集約ルート］&lt;br&gt;貸出番号：L-002&lt;br&gt;資料番号：B-202&lt;br&gt;貸出日：2026-08-20&lt;br&gt;返却期限：2026-09-03" style="whiteSpace=wrap;html=1;align=center;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;rounded=1;fillColor=#dae8fc;spacing=10;" parent="o-loan-b-g" vertex="1">
+                    <mxGeometry x="25" y="50" width="270" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="o-return" value="&lt;b&gt;返却B : 返却記録 (ReturnRecord)&lt;/b&gt;&lt;br&gt;返却日：2026-09-02" style="whiteSpace=wrap;html=1;align=center;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;rounded=1;fillColor=#dae8fc;spacing=10;" parent="o-loan-b-g" vertex="1">
+                    <mxGeometry x="15" y="305" width="290" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="o-ref-a" style="edgeStyle=entityRelationEdgeStyle;rounded=1;html=0;strokeColor=#44546A;startArrow=none;startFill=1;endArrow=none;exitX=1;exitY=.5;entryX=0;entryY=.5;" parent="1" source="o-member" target="o-loan-a" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="o-ref-b" style="edgeStyle=entityRelationEdgeStyle;rounded=1;html=0;strokeColor=#44546A;startArrow=none;startFill=1;endArrow=none;exitX=1;exitY=.5;entryX=0;entryY=.5;" parent="1" source="o-member" target="o-loan-b" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="o-comp-b" style="edgeStyle=orthogonalEdgeStyle;curved=1;html=0;strokeColor=#44546A;startArrow=diamondThin;startFill=1;endArrow=none;exitX=.5;exitY=1;entryX=.5;entryY=0;" parent="1" source="o-loan-b" target="o-return" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="o-a-note" value="貸出A：返却記録は0件。&#xa;R2：返却期限は貸出日以降。&#xa;R3：記録がないため貸出中。" style="whiteSpace=wrap;html=0;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;rounded=0;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacing=12;" parent="1" vertex="1">
+                    <mxGeometry x="870" y="200" width="360" height="135" as="geometry"/>
+                </mxCell>
+                <mxCell id="o-note-a" style="edgeStyle=entityRelationEdgeStyle;rounded=1;html=0;strokeColor=#44546A;startArrow=none;startFill=1;endArrow=none;dashed=1;exitX=1;exitY=.5;entryX=0;entryY=.5;" parent="1" source="o-loan-a" target="o-a-note" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="o-b-note" value="貸出B：返却記録は1件。&#xa;R2：返却期限は貸出日以降。&#xa;R3：返却日は貸出日以降。" style="whiteSpace=wrap;html=0;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;rounded=0;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacing=12;" parent="1" vertex="1">
+                    <mxGeometry x="870" y="480" width="360" height="135" as="geometry"/>
+                </mxCell>
+                <mxCell id="o-note-b" style="edgeStyle=entityRelationEdgeStyle;rounded=1;html=0;strokeColor=#44546A;startArrow=none;startFill=1;endArrow=none;dashed=1;exitX=1;exitY=.5;entryX=0;entryY=.5;" parent="1" source="o-loan-b" target="o-b-note" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="o-r1-note" value="R1：利用者Aに貸出2件。&#xa;各貸出の借り手は1人。&#xa;同じ利用者でも貸出集約は別。" style="whiteSpace=wrap;html=0;fontFamily=Helvetica;fontSize=16;fontColor=#172B4D;strokeColor=#6c8ebf;rounded=0;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacing=12;" parent="1" vertex="1">
+                    <mxGeometry x="50" y="560" width="340" height="130" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
