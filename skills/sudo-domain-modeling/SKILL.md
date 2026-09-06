@@ -1,97 +1,93 @@
 ---
 name: sudo-domain-modeling
-description: Create and update Japanese domain model diagrams and corresponding object diagrams using sudo modeling. Derive concepts, attributes, relationships, multiplicities, aggregates, and business rules from business descriptions, specifications, use cases, or existing models, and validate them against concrete examples. Delegate diagram rendering to the draw-io skill.
+description: Create and update Japanese domain model diagrams and corresponding object diagrams using sudo modeling and Mermaid. Derive concepts, attributes, relationships, multiplicities, aggregates, and business rules, then validate them against concrete examples. Deliver Markdown (.md) by default or Mermaid source (.mmd) when requested.
 ---
 
-# sudo Domain Modeling
+# sudo Domain Modeling with Mermaid
 
-Build a domain model from business descriptions, validate it with corresponding concrete examples, and deliver an editable `.drawio` file.
-Cover the domain model and object diagrams of sudo modeling. Do not require system context or use case diagrams as prerequisites.
+Build a domain model from business descriptions and validate it with corresponding concrete examples. Cover the domain model and object diagrams of sudo modeling without requiring system context or use case diagrams.
 
-## Output Language
+## Output Format and Language
 
-Write the generated draw.io diagrams in Japanese, including page titles, attributes, relationship labels, aggregate names, rules, constraints, scenario descriptions, and notes.
-Use Japanese concept names with their English equivalents alongside them. Preserve established identifiers, proper names, and values that should not be translated. English instructions in this skill do not imply English diagram output.
-
-## Division of Responsibilities with draw-io
-
-This skill handles model semantics, example selection, and consistency between the diagrams.
-Delegate XML structure, shapes, connectors, coordinates, layout, file creation, editing, and opening to `draw-io`.
-
-Before rendering or reading existing diagrams, locate and read the `draw-io` skill's `SKILL.md` through the available skill catalog, then follow its applicable workflow and references. Do not hardcode an installation path.
-If it is unavailable, continue organizing the model and examples, then report the missing dependency required for rendering. Do not substitute an independent XML generation procedure.
+- Default to one `.md` file with headings `ドメインモデル図` and `オブジェクト図`, each followed by a fenced `mermaid` block. Add scenario subheadings when multiple object diagrams are needed.
+- When `.mmd` is requested or supplied as the output extension, save one diagram per file, for example, `domain-model.mmd` and `object-diagram.mmd`. Use raw Mermaid source without Markdown fences or prose. Give each diagram its Japanese title using Mermaid YAML frontmatter. If only one output path is supplied, use it for the domain model and derive a sibling path for the object diagram, reporting both paths.
+- Write visible labels, attributes, aggregate names, rules, notes, and scenario descriptions in Japanese. Include English equivalents alongside Japanese concept names. Preserve established identifiers, proper names, and values.
 
 ## Inputs and Scope
 
-Use the business descriptions, target use cases, specifications, business rules, examples, and existing diagrams supplied or designated by the user. Do not require a fixed input format.
+Use business descriptions, target use cases, specifications, business rules, examples, and existing diagrams supplied or designated by the user.
 
-- Narrow the business scope and use cases for this iteration, distinguishing what is out of scope.
-- Extract Japanese and English concept names, representative attributes, relationships, rules, and examples. Prefer established terminology.
-- Separate confirmed facts, assumptions, and open questions. Label provisional translations and generated fictional examples accordingly.
-- Make progress where information is sufficient. Ask necessary questions about business decisions that materially affect the model, and do not depict them as settled before receiving answers.
+- Narrow the scope for this iteration and prefer established terminology.
+- Extract concepts, representative attributes, relationships, rules, and examples.
+- Separate confirmed facts, assumptions, and open questions. Label fictional examples and provisional translations accordingly.
+- Progress where information is sufficient. Ask necessary questions about business decisions that materially affect the model instead of silently settling them.
 
 ## Build the Model and Examples
 
-Start by abstracting concrete examples or by instantiating an existing model. Iterate between the two to resolve inconsistencies.
+Start with concrete examples or an existing model, then iterate between them to resolve inconsistencies.
 
 ### Domain Model Diagram
 
-- Represent business concepts as boxes labeled with Japanese names and corresponding English names.
-- Include representative attributes. Do not require an exhaustive field list or methods.
-- Show relationships and multiplicities at both ends. Check optionality and permitted counts against business rules.
-- Attach rules and constraints as callouts or notes to the relevant concepts or relationships.
-- Include assumptions and open business questions only when grounded in the task and relevant to understanding or deciding the model. Distinguish them from confirmed rules with labels, not color alone. Do not invent open questions to demonstrate notation.
-- Determine aggregate boundaries after organizing concepts and rules. Identify aggregate names and roots, and explain each grouping as a unit for maintaining business consistency.
-- Mark tentative aggregate boundaries in the diagram. Do not group concepts into one aggregate merely because they are related.
+- Represent concepts with Japanese and English names and representative attributes. Methods and exhaustive field lists are not required.
+- Show relationships and multiplicities for both ends, checking optionality and permitted counts against business rules.
+- Attach rules and constraints to the relevant concepts or relationships.
+- Include assumptions and open business questions when grounded in the task and useful to understanding or deciding the model. Distinguish them from confirmed rules.
+- Determine aggregate boundaries after organizing concepts and rules. Identify aggregate roots and explain groupings as units for maintaining business consistency. Mark tentative boundaries accordingly.
 
-Do not turn the task into producing an ER diagram or an implementation class inventory. Distinguish entities and value objects when useful for a decision, without forcing uncertain classifications.
+Do not turn the task into an ER diagram or implementation class inventory. Distinguish entities and value objects when useful without forcing uncertain classifications.
 
 ### Object Diagram
 
-- Name each instance so its type is clear, for example, `注文A : 注文 (Order)`.
-- Populate representative model attributes with concrete values and draw actual links between instances.
-- Show the boundary of each aggregate instance. Depict separate instances as separate groups even when they share an aggregate type.
-- Briefly describe the scenario and the point in time represented. Do not mix states that cannot coexist at that time.
-- Do not fix the number of examples. Supplement representative examples as needed to cover significant state differences and relationship count boundaries.
-- Static diagrams cannot prove operation preconditions or state transitions. When necessary, supplement them with separate before-and-after examples and notes.
+- Make the type of every instance clear, for example, `注文A : 注文 (Order)`.
+- Populate representative attributes with concrete values and draw links between actual instances.
+- Show separate boundaries for separate aggregate instances, even when their aggregate type is the same.
+- Identify the scenario and time represented. Do not mix states that cannot coexist.
+- Select representative examples and add significant state differences or relationship count boundaries when useful. Do not fix the number of examples.
+- Use separate before-and-after examples when needed to explain operations; a static diagram alone cannot prove operation behavior.
 
-## Check Correspondence
+## Mermaid Notation
 
-Before rendering and after editing, verify the following:
+Use `flowchart` syntax as a structural modeling notation so aggregate boundaries, bold names, centered attributes, and notes share a consistent representation across both diagrams. These are domain and object diagrams, not process flows.
 
-1. Every instance maps to a model concept, with consistent attribute names, type meanings, and Japanese/English terminology across both diagrams.
-2. Every link maps to a model relationship, and each instance's link counts satisfy the multiplicities at both ends.
-3. Aggregate membership and references across aggregate boundaries agree between the diagrams.
-4. Concrete attribute values, states, and combinations obey confirmed business rules.
-5. It is clear which examples exercise important rules, and any aspects not checked by examples remain documented.
+- Use stable ASCII node IDs and quoted Japanese display labels.
+- Represent each aggregate with a named `subgraph`; explicitly label its root. Create a separate subgraph for each aggregate instance in object diagrams.
+- Use Markdown string labels with a bold first line for concept names or instance headings, including English equivalents. Center-align all text inside concept and instance boxes with `text-align:center` in the node class.
+- Use solid undirected links for associations. In domain diagrams, label each relationship with endpoint names and counts, such as `利用者 1 : 貸出 0..*`, so multiplicities cannot be confused with link direction.
+- Express containment explicitly in the link label, such as `包含：貸出 1 : 返却記録 0..1`. In object diagrams, label containment links `包含` and show concrete instance links instead of type-level multiplicities. This is a textual equivalent of composition, not a UML diamond arrow.
+- Use separate note nodes and dashed links to their subjects. Keep model elements and notes distinct.
+- Choose `LR` or `TB` for readability. External links can override a subgraph's direction; inspect the rendered result rather than assuming a local direction is honored.
 
-If invalid examples are requested, label them with the rules they violate so they cannot be mistaken for valid examples.
-When an inconsistency appears, use the inputs to decide whether to revise the model or the example. Do not weaken a confirmed rule simply to make an example pass.
-
-## Render and Update
-
-By default, use one `.drawio` file with pages named `ドメインモデル図` and `オブジェクト図`. Split examples into scenario-specific pages when needed. Honor user-specified destinations and organization.
-
-Use the following default colors consistently across both diagrams, unless the user specifies a different palette:
+Use these default colors consistently unless the user specifies otherwise:
 
 | Element | Fill | Border |
 | --- | --- | --- |
-| Domain concepts and object instances | Blue `#dae8fc` | `#6c8ebf` |
-| Aggregate boundaries | Gray `#f5f5f5` | `#666666` |
-| Notes and callouts | Yellow `#fff2cc` | `#d6b656` |
+| Concepts and instances | `#dae8fc` | `#6c8ebf` |
+| Aggregate boundaries | `#f5f5f5` | `#666666` |
+| Notes | `#fff2cc` | `#d6b656` |
 
-Prepare box labels and attributes, relationship endpoints and multiplicities, aggregate groups, note targets, and page organization for `draw-io`.
-Render domain concept names and object instance headings in bold, including their English equivalents. Center-align all text inside concept and instance boxes.
-After generation, inspect the appearance using available viewing or export tools. Correct clipped text, overlaps, and ambiguous connectors or notes. If visual inspection is unavailable, report that it was not performed.
+Apply node colors through `classDef` and aggregate colors through `style` statements. Keep diagram-specific configuration inside each Mermaid block or source file so it remains self-contained.
 
-When updating an existing diagram, check examples corresponding to changed concepts, attributes, relationships, and rules, and apply necessary changes to them as well.
+## Check and Deliver
 
-Deliver the file link with a brief account of major assumptions, open questions, and verification limits. Treat the model as a hypothesis to validate and revise through implementation; do not expand the work indefinitely in pursuit of a perfect first version.
+Before delivery and after updates, check that:
 
-## Source and Additional Design Choices
+1. Every instance maps to a model concept with matching attributes and Japanese/English terminology.
+2. Every link maps to a model relationship and concrete link counts satisfy both endpoint multiplicities.
+3. Aggregate membership and references across boundaries agree between the diagrams.
+4. Concrete values and states obey confirmed rules.
+5. The important rules illustrated by the examples are identifiable.
 
-For a concrete example of notation and correspondence, read [assets/README.md](assets/README.md) and inspect [assets/example.drawio](assets/example.drawio) using `draw-io`. The two Japanese pages show a fictional lending model and matching instances. Use them as a reference, not as business requirements; preserve the bundled sample when creating task-specific output.
+Label invalid examples explicitly when requested. Resolve inconsistencies using the inputs; do not weaken confirmed rules to make examples pass. Update affected examples when the model changes.
 
-Source: [Simple DDD Modeling — Domain-Driven Design](https://little-hands.hatenablog.com/entry/2022/06/01/ddd-modeling) (little hands' lab, June 1, 2022; article in Japanese).
+Parse or render each diagram using the available Mermaid tooling. Inspect bold headings, centered text, Japanese labels, aggregate boundaries, and connector readability when rendering is available. Report any verification limits in the delivery message.
 
-Use the source's notation and its approach of iterating between concrete examples and abstract models. Correspondence checks, explicit assumption labels, page organization, and rendering delegation are this skill's operational choices, not mandatory procedures prescribed by the source. Do not carry the source's recruitment-specific rules or color scheme into other business domains.
+Deliver links to the requested `.md` or `.mmd` files with a concise account of major assumptions and open questions. Treat the model as a hypothesis to revise through implementation.
+
+## Example and Sources
+
+Read [assets/README.md](assets/README.md) and [assets/example.md](assets/example.md) for a Japanese lending model and matching instances. For `.mmd` output, save the contents of each fenced block as its own file. Preserve the bundled example and evaluate the target domain independently of its sample rules and values.
+
+- Modeling basis: [Simple DDD Modeling — Domain-Driven Design](https://little-hands.hatenablog.com/entry/2022/06/01/ddd-modeling) (little hands' lab, June 1, 2022; Japanese).
+- Mermaid syntax: [Flowcharts](https://mermaid.js.org/syntax/flowchart.html), including subgraphs, Markdown strings, and styling.
+
+The Mermaid representation, output packaging, and default styling are this skill's design choices rather than requirements of the original modeling article.

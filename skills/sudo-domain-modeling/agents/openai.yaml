@@ -1,4 +1,4 @@
 interface:
   display_name: "sudo Domain Modeling"
-  short_description: "業務からドメインモデル図と対応するオブジェクト図を作成・検証する"
-  default_prompt: "$sudo-domain-modeling を使って、対象業務のドメインモデル図と対応するオブジェクト図を作成し、draw-ioで保存してください。"
+  short_description: "Create Japanese domain and object diagrams with Mermaid"
+  default_prompt: "Use $sudo-domain-modeling to create Japanese domain and object diagrams in a Markdown file."
