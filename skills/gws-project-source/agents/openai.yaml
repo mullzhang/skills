@@ -1,0 +1,6 @@
+interface:
+  display_name: "GWS Project Source"
+  short_description: "Find GWS project information for the active task"
+  default_prompt: "Use $gws-project-source to find project information needed for this task, then continue the task."
+policy:
+  allow_implicit_invocation: true
