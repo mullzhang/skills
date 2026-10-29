@@ -28,6 +28,14 @@ def format_seconds(value: float) -> str:
     return f"{minutes:02d}:{seconds:02d}"
 
 
+def speaker_label(segment: dict[str, Any]) -> str:
+    for field in ("channel", "track"):
+        value = segment.get(field)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    return "unknown"
+
+
 def load_transcript(path: Path) -> tuple[float, list[dict[str, Any]], int]:
     with path.open(encoding="utf-8") as stream:
         data = json.load(stream)
@@ -46,7 +54,7 @@ def load_transcript(path: Path) -> tuple[float, list[dict[str, Any]], int]:
     if not isinstance(diagnostics, list):
         raise SystemExit("Kanary JSON must contain transcript.diagnostics array")
 
-    required = {"start_seconds", "end_seconds", "channel", "text"}
+    required = {"start_seconds", "end_seconds", "text"}
     for index, segment in enumerate(segments):
         if not isinstance(segment, dict) or not required.issubset(segment):
             raise SystemExit(f"invalid segment at index {index}")
@@ -54,10 +62,9 @@ def load_transcript(path: Path) -> tuple[float, list[dict[str, Any]], int]:
             raise SystemExit(f"invalid start_seconds at segment {index}")
         if not isinstance(segment["end_seconds"], (int, float)):
             raise SystemExit(f"invalid end_seconds at segment {index}")
-        if not isinstance(segment["channel"], str):
-            raise SystemExit(f"invalid channel at segment {index}")
         if not isinstance(segment["text"], str):
             raise SystemExit(f"invalid text at segment {index}")
+        segment["channel"] = speaker_label(segment)
 
     return float(duration), segments, len(diagnostics)
 

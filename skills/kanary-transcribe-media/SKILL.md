@@ -25,6 +25,17 @@ not be an unmodified Kanary response.
 
 Use `assets/sample.wav` for a smoke test and `assets/sample.transcript.md` as the expected summarized Markdown example. Copy the WAV to a writable temporary directory before invoking this skill so the sibling JSON and Markdown outputs do not modify the bundled assets directory.
 
+## Renderer acceptance
+
+When validating renderer changes, use one synthetic JSON fixture with segments
+for valid `channel` only, valid `track` only, both valid fields, an empty or
+non-string `channel` with valid `track`, an invalid or empty `track`, and
+neither field. Use distinct labels so each result is visible in the Markdown.
+Confirm that the rendered label prefers a non-empty string `channel`, falls
+back to a non-empty string `track`, and uses `unknown` when neither is valid.
+Also verify that missing or invalid `start_seconds`, `end_seconds`, or `text`
+values fail rendering and that the source JSON remains byte-for-byte unchanged.
+
 ## Workflow
 
 1. Accept exactly one existing `.mp4`, `.m4a`, or `.wav` path. Reject other extensions instead of inferring support.
@@ -48,7 +59,11 @@ Use `assets/sample.wav` for a smoke test and `assets/sample.transcript.md` as th
 
    Keep stderr visible. Project the receipt with `jq` instead of loading the full transcript into context.
 7. Generate a concise summary from the transcript text after Kanary succeeds:
-   - Project only timestamp, channel, and text from `transcript.segments` with `jq`.
+   - Project timestamps, speaker labels, and text from `transcript.segments`
+     with `jq`. Read the speaker label from a non-empty string `channel`; if
+     it is missing, non-string, or empty, use a non-empty string `track`,
+     otherwise use `unknown`.
+   - Read the original Kanary JSON without changing or rewriting it.
    - Summarize in the transcript's language using one to seven factual bullets, scaled to the recording length.
    - Prioritize key points, decisions, next actions, and unresolved questions when present.
    - Do not invent speaker names or attribute statements to named speakers when the transcript lacks diarization.
@@ -64,6 +79,11 @@ Use `assets/sample.wav` for a smoke test and `assets/sample.transcript.md` as th
    - both outputs are regular files in the source directory
    - JSON contains numeric `duration` and a `transcript.segments` array
    - the Markdown renderer reports the same segment count as the JSON
+   - each rendered speaker label follows `channel`, then `track`, then
+     `unknown`, accepting both Kanary segment formats
+   - missing or invalid `start_seconds`, `end_seconds`, or `text` values still
+     cause rendering to fail instead of being silently corrected
+   - the original Kanary JSON remains unchanged
    - Markdown contains a non-empty `## Summary` before `## Transcript`
    - when the JSON has segments, Markdown contains its first and last timestamped segments
 10. Remove only the task-specific temporary directory. Keep both sibling outputs.
@@ -95,8 +115,9 @@ response.
    needed to merge transcript timestamps.
 4. Transcribe every temporary chunk with top-level `kanary transcribe`. Write
    each raw response to its confirmed sibling part JSON path. Project each
-   receipt with `jq`. If any chunk fails or is plan-limited, stop; keep the raw
-   JSON files that already succeeded and do not create the integrated Markdown.
+   receipt with `jq`, leaving the original Kanary JSON unchanged. If any chunk
+   fails or is plan-limited, stop; keep the raw JSON files that already
+   succeeded and do not create the integrated Markdown.
 5. Merge the chunk JSON files only in the temporary directory. The merger shifts
    timestamps to the original recording timeline, takes the earlier chunk in an
    overlap, and clips a boundary-crossing segment rather than dropping it:
@@ -109,8 +130,11 @@ response.
 
    The merged JSON is an intermediate artifact, not a Kanary-original JSON and
    must not be kept beside the source.
-6. Project timestamp, channel, and text from the merged JSON. Generate the
-   summary as in the standard workflow, then render the integrated Markdown:
+6. Project timestamps, speaker labels, and text from the merged JSON. Read each
+   speaker label from a non-empty string `channel`; if it is missing,
+   non-string, or empty, use a non-empty string `track`; otherwise use
+   `unknown`. Generate the summary as in the standard workflow, then render the
+   integrated Markdown. Do not edit the raw part JSON files:
 
    ```sh
    python <skill-dir>/scripts/render_transcript_markdown.py \
@@ -120,8 +144,12 @@ response.
 
 7. Verify every part JSON and the Markdown are regular sibling files. Verify
    each raw JSON has numeric `duration` and `transcript.segments`; verify the
-   Markdown segment count equals the merged-transcript receipt; verify the
-   non-empty `## Summary` precedes `## Transcript`; and verify it contains the
+   Markdown segment count equals the merged-transcript receipt; verify
+   rendered speaker labels follow `channel`, then `track`, then `unknown`, so
+   both Kanary segment formats are accepted; verify invalid or missing
+   `start_seconds`, `end_seconds`, or `text` values are not silently corrected;
+   verify the raw part JSON files remain unchanged; verify the non-empty
+   `## Summary` precedes `## Transcript`; and verify the Markdown contains the
    first and last merged timestamped segments.
 8. Remove only the task-specific temporary directory. Report the overlap,
    individual raw JSON paths, integrated Markdown path, source duration, raw
